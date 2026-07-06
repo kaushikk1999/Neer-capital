@@ -1,0 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+:root { color-scheme: dark; }
+html { scroll-behavior: smooth; }
+body { @apply bg-[#050816] text-white antialiased; }
+::selection { background: rgba(91, 140, 255, 0.35); color: white; }
+@layer base { h1, h2, h3, h4 { @apply tracking-tight; } p { @apply text-slate-300; } }
+@layer components { .container-shell { @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8; } .glass { @apply border border-white/10 bg-white/5 backdrop-blur-xl shadow-[0_24px_90px_rgba(0,0,0,0.45)]; } .card { @apply rounded-3xl border border-white/10 bg-white/[0.04] shadow-[0_20px_60px_rgba(3,10,27,0.35)]; } .btn-primary { @apply inline-flex items-center justify-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-slate-950 transition hover:scale-[1.01] hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-white/60; } .btn-secondary { @apply inline-flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/30; } .section-kicker { @apply text-xs font-semibold uppercase tracking-[0.24em] text-blue-300; } .section-title { @apply text-3xl font-semibold tracking-tight text-white sm:text-4xl lg:text-5xl; } }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }

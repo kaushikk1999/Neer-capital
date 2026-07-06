@@ -1,0 +1,9 @@
+node_modules
+.next
+.env.local
+.vercel
+
+# test artifacts
+/playwright-report
+/test-results
+/playwright/.cache
