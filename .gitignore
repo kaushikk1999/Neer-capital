@@ -3,6 +3,9 @@ node_modules
 .env.local
 .vercel
 
+# contact thread store (runtime data)
+/.data
+
 # test artifacts
 /playwright-report
 /test-results
