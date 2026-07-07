@@ -7,7 +7,7 @@ import { WebVitals } from './web-vitals';
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 const title = 'Neer — AI Financial Intelligence';
-const description = 'Enterprise AI financial intelligence platform with citations, security, and decision support.';
+const description = 'Enterprise AI financial intelligence product with citations, security, and decision support.';
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title,

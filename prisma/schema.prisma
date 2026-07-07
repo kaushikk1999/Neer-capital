@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Customer {
+  id            String           @id @default(uuid())
+  email         String           @unique
+  name          String
+  phone         String
+  status        String           @default("active")
+  firstContact  DateTime         @default(now()) @map("first_contact")
+  lastContact   DateTime         @default(now()) @map("last_contact")
+  totalMessages Int              @default(0) @map("total_messages")
+  createdAt     DateTime         @default(now()) @map("created_at")
+  updatedAt     DateTime         @updatedAt @map("updated_at")
+  messages      ContactMessage[]
+  threads       EmailThread[]
+  auditLogs     AuditLog[]
+
+  @@map("customers")
+}
+
+model ContactMessage {
+  id              String      @id @default(uuid())
+  customerId      String      @map("customer_id")
+  threadId        String      @map("thread_id")
+  subject         String
+  message         String      @db.Text
+  spamScore       Float       @default(0) @map("spam_score")
+  validationScore Float       @default(0) @map("validation_score")
+  ip              String?
+  userAgent       String?     @map("user_agent") @db.VarChar(512)
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
+  customer        Customer    @relation(fields: [customerId], references: [id])
+  thread          EmailThread @relation(fields: [threadId], references: [id])
+  auditLogs       AuditLog[]
+
+  @@index([customerId])
+  @@index([threadId])
+  @@index([ip, createdAt])
+  @@map("contact_messages")
+}
+
+model EmailThread {
+  id               String           @id @default(uuid())
+  customerId       String           @map("customer_id")
+  threadSubject    String           @map("thread_subject")
+  rootMessageId    String           @map("root_message_id")
+  lastMessageId    String           @map("last_message_id")
+  referencesHeader String           @map("references_header") @db.Text
+  replyCount       Int              @default(0) @map("reply_count")
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
+  customer         Customer         @relation(fields: [customerId], references: [id])
+  messages         ContactMessage[]
+
+  @@index([customerId])
+  @@map("email_threads")
+}
+
+model ValidationLog {
+  id        String   @id @default(uuid())
+  field     String
+  value     String   @db.VarChar(512)
+  reason    String
+  score     Float
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([field, createdAt])
+  @@map("validation_logs")
+}
+
+model AuditLog {
+  id         String          @id @default(uuid())
+  event      String
+  details    Json?
+  customerId String?         @map("customer_id")
+  messageId  String?         @map("message_id")
+  createdAt  DateTime        @default(now()) @map("created_at")
+  customer   Customer?       @relation(fields: [customerId], references: [id])
+  message    ContactMessage? @relation(fields: [messageId], references: [id])
+
+  @@index([event, createdAt])
+  @@map("audit_logs")
+}
