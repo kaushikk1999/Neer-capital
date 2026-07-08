@@ -3,7 +3,7 @@ import AxeBuilder from '@axe-core/playwright';
 
 // Automated accessibility scan of every public route.
 // Fails on WCAG 2a/2aa violations of serious/critical impact.
-const ROUTES = ['/', '/ai', '/about', '/security', '/sources', '/contact'];
+const ROUTES = ['/', '/about', '/sources', '/contact'];
 
 for (const path of ROUTES) {
   test(`a11y: ${path} has no serious/critical violations`, async ({ page }) => {

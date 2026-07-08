@@ -2,8 +2,6 @@ import type { FAQItem, NavItem, Pillar, PricingPlan, Solution, Stat, WorkflowSte
 export const navItems: NavItem[] = [
   { label: 'Product', href: '/#product' },
   { label: 'Solutions', href: '/#solutions' },
-  { label: 'AI Demo', href: '/ai' },
-  { label: 'Security', href: '/security' },
   { label: 'Pricing', href: '/#pricing' },
   { label: 'About', href: '/about' },
   { label: 'Contact', href: '/contact' }

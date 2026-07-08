@@ -8,7 +8,7 @@ function trackErrors(page: Page): string[] {
   return errors;
 }
 
-const ROUTES = ['/', '/ai', '/about', '/security', '/sources', '/contact', '/embed'];
+const ROUTES = ['/', '/about', '/sources', '/contact', '/embed'];
 
 test.describe('routes', () => {
   for (const path of ROUTES) {
@@ -45,19 +45,13 @@ test.describe('desktop-only interactions', () => {
     await expect(section.getByText('Investment teams')).toBeVisible();
   });
 
-  test('nav: AI Demo navigates to /ai (was dead anchor #ai-demo)', async ({ page }) => {
-    await page.goto('/');
-    await page.locator('header').getByRole('link', { name: 'AI Demo' }).click();
-    await expect(page).toHaveURL(/\/ai$/);
-    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-  });
+
 });
 
 test.describe('footer links (were all href="/")', () => {
   const expected: Record<string, RegExp> = {
-    Platform: /\/#platform$/, 'AI Demo': /\/ai$/, Pricing: /\/#pricing$/,
+    Product: /\/#product$/, Pricing: /\/#pricing$/,
     About: /\/about$/, Contact: /\/contact$/, Sources: /\/sources$/,
-    Security: /\/security$/, Compliance: /\/security$/, Privacy: /\/security$/,
   };
   for (const [label, href] of Object.entries(expected)) {
     test(`footer "${label}" points to a real target`, async ({ page }) => {
