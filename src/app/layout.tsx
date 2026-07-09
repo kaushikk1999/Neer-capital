@@ -4,6 +4,7 @@ import { Inter } from 'next/font/google';
 import { Header } from '@/components/header/Header';
 import { Footer } from '@/components/footer/Footer';
 import { WebVitals } from './web-vitals';
+import { Providers } from './providers';
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 const title = 'Neer — AI Financial Intelligence';
@@ -16,4 +17,4 @@ export const metadata: Metadata = {
   openGraph: { title, description, url: siteUrl, siteName: 'Neer', type: 'website' },
   twitter: { card: 'summary_large_image', title, description },
 };
-export default function RootLayout({ children }: { children: React.ReactNode }) { return (<html lang="en" className={inter.variable}><body className="bg-[#050816] text-white antialiased"><WebVitals /><Header /><main>{children}</main><Footer /></body></html>); }
+export default function RootLayout({ children }: { children: React.ReactNode }) { return (<html lang="en" className={inter.variable}><body className="bg-[#050816] text-white antialiased"><Providers><WebVitals /><Header /><main>{children}</main><Footer /></Providers></body></html>); }

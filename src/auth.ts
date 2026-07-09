@@ -4,10 +4,11 @@ import Credentials from "next-auth/providers/credentials"
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import { prisma } from "@/lib/db"
 import bcrypt from "bcryptjs"
+import { authConfig } from "@/auth.config"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  ...authConfig,
   adapter: PrismaAdapter(prisma),
-  session: { strategy: "jwt" },
   providers: [
     // Only register Google when credentials are configured — an empty
     // clientId throws at route init and breaks all of /api/auth.
@@ -40,8 +41,4 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
     }),
   ],
-  pages: {
-    signIn: "/login",
-    error: "/login",
-  },
 })
