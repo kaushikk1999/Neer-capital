@@ -1,11 +1,14 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import { signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 export default function LoginForm({ initialError = "" }: { initialError?: string }) {
   const router = useRouter()
+  const { t } = useLanguage()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState(initialError)
@@ -25,13 +28,13 @@ export default function LoginForm({ initialError = "" }: { initialError?: string
       })
 
       if (res?.error) {
-        setError("Invalid email or password")
+        setError(t("auth.invalidCreds"))
       } else {
         router.push("/")
         router.refresh()
       }
     } catch (err) {
-      setError("An unexpected error occurred")
+      setError(t("auth.unexpectedError"))
     } finally {
       setLoading(false)
     }
@@ -50,8 +53,8 @@ export default function LoginForm({ initialError = "" }: { initialError?: string
   return (
     <div className="w-full max-w-md mx-auto space-y-6 bg-white/5 backdrop-blur-lg p-8 rounded-2xl border border-white/10 shadow-xl">
       <div className="text-center space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight text-white">Welcome back</h1>
-        <p className="text-gray-400">Sign in to your account to continue</p>
+        <h1 className="text-3xl font-bold tracking-tight text-white">{t('auth.loginTitle')}</h1>
+        <p className="text-gray-400">{t('auth.loginSubtitle')}</p>
       </div>
 
       {error && (
@@ -63,7 +66,7 @@ export default function LoginForm({ initialError = "" }: { initialError?: string
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-200 block" htmlFor="email">
-            Email
+            {t('auth.emailLabel')}
           </label>
           <input
             id="email"
@@ -72,13 +75,13 @@ export default function LoginForm({ initialError = "" }: { initialError?: string
             onChange={(e) => setEmail(e.target.value)}
             required
             className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-500 transition-colors"
-            placeholder="name@example.com"
+            placeholder={t('auth.emailPlaceholder')}
           />
         </div>
 
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-200 block" htmlFor="password">
-            Password
+            {t('auth.passwordLabel')}
           </label>
           <input
             id="password"
@@ -96,7 +99,7 @@ export default function LoginForm({ initialError = "" }: { initialError?: string
           disabled={loading || googleLoading}
           className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
         >
-          {loading ? "Signing in..." : "Sign in"}
+          {loading ? t('auth.signingIn') : t('auth.signInBtn')}
         </button>
       </form>
 
@@ -105,7 +108,7 @@ export default function LoginForm({ initialError = "" }: { initialError?: string
           <div className="w-full border-t border-white/10"></div>
         </div>
         <div className="relative flex justify-center text-sm">
-          <span className="px-2 bg-gray-900 text-gray-400">Or continue with</span>
+          <span className="px-2 bg-gray-900 text-gray-400">{t('auth.orContinue')}</span>
         </div>
       </div>
 
@@ -134,8 +137,13 @@ export default function LoginForm({ initialError = "" }: { initialError?: string
           />
           <path d="M1 1h22v22H1z" fill="none" />
         </svg>
-        {googleLoading ? "Connecting..." : "Google"}
+        {googleLoading ? t("auth.connecting") : "Google"}
       </button>
+
+      <p className="text-center text-sm text-gray-400">
+        {t("auth.noAccount")}{" "}
+        <Link href="/signup" className="text-blue-400 hover:text-blue-300 font-medium">{t("auth.createAccount")}</Link>
+      </p>
     </div>
   )
 }

@@ -1,3 +1,4 @@
+'use client';
 import { Hero } from '@/components/hero/Hero';
 import { TrustStrip } from '@/components/trust/TrustStrip';
 import { Section } from '@/components/ui/Section';
@@ -6,4 +7,26 @@ import { SolutionsGrid } from '@/components/solutions/SolutionsGrid';
 import { PricingSection } from '@/components/pricing/PricingSection';
 import { FAQAccordion } from '@/components/faq/FAQAccordion';
 import { faqs } from '@/lib/data';
-export default function HomePage() { return (<><Hero /><TrustStrip /><Section id="product" eyebrow="Product" title="Built for research that cannot afford uncertainty" subtitle="Combine market intelligence, internal knowledge, and governed AI in one workflow."><PillarGrid /></Section><Section id="solutions" eyebrow="Solutions" title="Built for every team that depends on trusted answers" subtitle="From investment diligence to risk and compliance, Neer adapts to how your teams work."><SolutionsGrid /></Section><Section id="pricing" eyebrow="Pricing" title="Flexible for teams, structured for enterprises" subtitle="Choose the right path for your organization."><PricingSection /></Section><Section id="faq" eyebrow="FAQ" title="Answers for enterprise buyers" subtitle="Common questions from procurement, security, and business stakeholders."><FAQAccordion items={faqs} /></Section></>); }
+import { useLanguage } from '@/lib/i18n/LanguageContext';
+
+export default function HomePage() { 
+  const { t } = useLanguage();
+  return (
+    <>
+      <Hero />
+      <TrustStrip />
+      <Section id="product" eyebrow={t('product.eyebrow')} title={t('product.heading')} subtitle={t('product.subtitle')}>
+        <PillarGrid />
+      </Section>
+      <Section id="solutions" eyebrow={t('solutions.eyebrow')} title={t('solutions.heading')} subtitle={t('solutions.subtitle')}>
+        <SolutionsGrid />
+      </Section>
+      <Section id="pricing" eyebrow={t('pricing.eyebrow')} title={t('pricing.heading')} subtitle={t('pricing.subtitle')}>
+        <PricingSection />
+      </Section>
+      <Section id="faq" eyebrow={t('faq.eyebrow')} title={t('faq.heading')} subtitle={t('faq.subtitle')}>
+        <FAQAccordion items={faqs} />
+      </Section>
+    </>
+  ); 
+}

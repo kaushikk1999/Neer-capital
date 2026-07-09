@@ -1,4 +1,52 @@
+'use client';
 import { ArrowUpRight } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { HeroDemo } from './HeroDemo';
-export function Hero() { return (<section className="relative overflow-hidden py-24 lg:py-32"><div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_20%_20%,rgba(91,140,255,0.22),transparent_30%),radial-gradient(circle_at_80%_10%,rgba(217,181,110,0.18),transparent_25%),radial-gradient(circle_at_60%_80%,rgba(54,211,153,0.12),transparent_20%)]" /><div className="mx-auto grid w-full max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:px-8"><div className="max-w-2xl"><p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-300">AI financial intelligence for enterprise teams</p><h1 className="mt-4 text-5xl font-semibold tracking-tight text-white sm:text-6xl lg:text-7xl">Turn market complexity into board-ready decisions.</h1><p className="mt-6 max-w-xl text-lg leading-8 text-slate-300">Neer grounds every answer in trusted sources, internal knowledge, and real-time market intelligence — so teams can research faster, decide sooner, and stay compliant.</p><div className="mt-8 flex flex-wrap gap-3"><Button href="/contact" icon={<ArrowUpRight className="h-4 w-4" />}>Request a demo</Button></div><div className="mt-8 grid max-w-xl grid-cols-2 gap-3 sm:grid-cols-4">{[{ value: '180+', label: 'sources connected' }, { value: '99.98%', label: 'uptime target' }, { value: '24/7', label: 'coverage' }, { value: 'SOC 2', label: 'ready' }].map((item) => <div key={item.label} className="rounded-2xl border border-white/10 bg-white/[0.04] p-4"><div className="text-xl font-semibold text-white">{item.value}</div><div className="mt-1 text-xs text-slate-400">{item.label}</div></div>)}</div></div><div className="lg:pt-8"><HeroDemo query="What changed in bank exposure across regional portfolios this quarter?" answer="Exposure increased modestly in Europe while U.S. positions remained stable. The shift was driven by two managers reducing concentrated lender holdings and adding diversified financials." citations={[{ label: 'Regional exposure summary', source: 'Q4 portfolio review' }, { label: 'Manager notes', source: 'Internal research' }, { label: 'Market filings', source: 'Approved sources' }]} metrics={[{ label: 'Confidence', value: '92%' }, { label: 'Sources', value: '14' }]} /></div></div></section>); }
+import { useLanguage } from '@/lib/i18n/LanguageContext';
+
+export function Hero() { 
+  const { t } = useLanguage();
+  return (
+    <section className="relative overflow-hidden py-24 lg:py-32">
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_20%_20%,rgba(91,140,255,0.22),transparent_30%),radial-gradient(circle_at_80%_10%,rgba(217,181,110,0.18),transparent_25%),radial-gradient(circle_at_60%_80%,rgba(54,211,153,0.12),transparent_20%)]" />
+      <div className="mx-auto grid w-full max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
+        <div className="max-w-2xl">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-300">{t('hero.eyebrow')}</p>
+          <h1 className="mt-4 text-5xl font-semibold tracking-tight text-white sm:text-6xl lg:text-7xl">{t('hero.heading')}</h1>
+          <p className="mt-6 max-w-xl text-lg leading-8 text-slate-300">{t('hero.description')}</p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Button href="/contact" icon={<ArrowUpRight className="h-4 w-4" />}>{t('hero.cta')}</Button>
+          </div>
+          <div className="mt-8 grid max-w-xl grid-cols-2 gap-3 sm:grid-cols-4">
+            {[
+              { value: '180+', labelKey: 'hero.stat.sources' }, 
+              { value: '99.98%', labelKey: 'hero.stat.uptime' }, 
+              { value: '24/7', labelKey: 'hero.stat.coverage' }, 
+              { value: 'SOC 2', labelKey: 'hero.stat.soc' }
+            ].map((item) => (
+              <div key={item.labelKey} className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                <div className="text-xl font-semibold text-white">{item.value}</div>
+                <div className="mt-1 text-xs text-slate-400">{t(item.labelKey)}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="lg:pt-8">
+          <HeroDemo 
+            query={t('heroDemo.query')} 
+            answer={t('heroDemo.answer')} 
+            citations={[
+              { label: t('heroDemo.citation1.label'), source: t('heroDemo.citation1.source') }, 
+              { label: t('heroDemo.citation2.label'), source: t('heroDemo.citation2.source') }, 
+              { label: t('heroDemo.citation3.label'), source: t('heroDemo.citation3.source') }
+            ]} 
+            metrics={[
+              { label: t('heroDemo.confidence'), value: '92%' }, 
+              { label: t('heroDemo.sources'), value: '14' }
+            ]} 
+          />
+        </div>
+      </div>
+    </section>
+  ); 
+}

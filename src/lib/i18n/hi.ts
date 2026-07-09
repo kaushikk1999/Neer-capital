@@ -1,0 +1,185 @@
+import type { TranslationDict } from './types';
+
+export const hi: TranslationDict = {
+  // ── Language Switcher ──
+  'lang.en': 'English',
+  'lang.hi': 'हिंदी',
+  'lang.ta': 'தமிழ்',
+
+  // ── Nav ──
+  'nav.product': 'उत्पाद',
+  'nav.solutions': 'समाधान',
+  'nav.pricing': 'मूल्य निर्धारण',
+  'nav.about': 'हमारे बारे में',
+  'nav.contact': 'संपर्क',
+  'nav.requestDemo': 'डेमो अनुरोध',
+
+  // ── Auth ──
+  'auth.signIn': 'साइन इन',
+  'auth.signOut': 'साइन आउट',
+
+  // ── Hero ──
+  'hero.eyebrow': 'एंटरप्राइज़ टीमों के लिए AI वित्तीय बुद्धिमत्ता',
+  'hero.heading': 'बाज़ार की जटिलता को बोर्ड-स्तरीय निर्णयों में बदलें।',
+  'hero.description': 'Neer हर जवाब को विश्वसनीय स्रोतों, आंतरिक ज्ञान और रीयल-टाइम बाज़ार बुद्धिमत्ता पर आधारित करता है — ताकि टीमें तेज़ी से शोध करें, जल्दी निर्णय लें, और अनुपालन में रहें।',
+  'hero.cta': 'डेमो का अनुरोध करें',
+  'hero.stat.sources': 'स्रोत जुड़े',
+  'hero.stat.uptime': 'अपटाइम लक्ष्य',
+  'hero.stat.coverage': 'कवरेज',
+  'hero.stat.soc': 'तैयार',
+
+  // ── Hero Demo ──
+  'heroDemo.label': 'लाइव AI वर्कफ़्लो',
+  'heroDemo.query': 'इस तिमाही में क्षेत्रीय पोर्टफोलियो में बैंक एक्सपोज़र में क्या बदलाव हुआ?',
+  'heroDemo.sourcesLabel': 'प्राप्त स्रोत',
+  'heroDemo.citation1.label': 'क्षेत्रीय एक्सपोज़र सारांश',
+  'heroDemo.citation1.source': 'Q4 पोर्टफोलियो समीक्षा',
+  'heroDemo.citation2.label': 'प्रबंधक नोट्स',
+  'heroDemo.citation2.source': 'आंतरिक शोध',
+  'heroDemo.citation3.label': 'बाज़ार फाइलिंग',
+  'heroDemo.citation3.source': 'स्वीकृत स्रोत',
+  'heroDemo.answerLabel': 'उत्तर',
+  'heroDemo.answer': 'यूरोप में एक्सपोज़र में मामूली वृद्धि हुई जबकि अमेरिकी स्थिति स्थिर रही। यह बदलाव दो प्रबंधकों द्वारा केंद्रित ऋणदाता होल्डिंग्स कम करने और विविध वित्तीय संस्थानों को जोड़ने से हुआ।',
+  'heroDemo.confidence': 'विश्वास',
+  'heroDemo.sources': 'स्रोत',
+
+  // ── Trust Strip ──
+  'trust.headline': 'कड़ी निगरानी में काम करने वाली टीमों द्वारा विश्वसनीय',
+  'trust.stat.sources': 'स्रोत प्रकार जुड़े',
+  'trust.stat.uptime': 'अपटाइम लक्ष्य',
+  'trust.stat.coverage': 'वैश्विक शोध कवरेज',
+  'trust.stat.soc': 'तैयार आर्किटेक्चर',
+
+  // ── Product (Pillars) ──
+  'product.eyebrow': 'उत्पाद',
+  'product.heading': 'ऐसे शोध के लिए बना जो अनिश्चितता बर्दाश्त नहीं कर सकता',
+  'product.subtitle': 'बाज़ार बुद्धिमत्ता, आंतरिक ज्ञान और शासित AI को एक वर्कफ़्लो में जोड़ें।',
+  'product.pillar1.title': 'AI-संचालित वित्तीय बुद्धिमत्ता',
+  'product.pillar1.desc': 'खंडित बाज़ार डेटा को उद्धरण-समर्थित प्रतिक्रियाओं और निर्देशित शोध वर्कफ़्लो के साथ बोर्ड-स्तरीय अंतर्दृष्टि में बदलें।',
+  'product.pillar2.title': 'एंटरप्राइज़ RAG बड़े पैमाने पर',
+  'product.pillar2.desc': 'हर उत्तर को निजी दस्तावेज़ों, स्वीकृत स्रोतों और ऑडिट योग्य पुनर्प्राप्ति पाइपलाइन में आधारित करें।',
+  'product.pillar3.title': 'बहु-भाषा समर्थन',
+  'product.pillar3.desc': 'वैश्विक टीमों को बहुभाषी इंटरफेस और स्थानीय बाज़ार संदर्भ से सुसज्जित करें बिना निरंतरता खोए।',
+  'product.pillar4.title': 'सुरक्षित निर्णय समर्थन',
+  'product.pillar4.desc': 'भूमिका-आधारित पहुँच, अनुपालन नियंत्रण, तैनाती अलगाव, और प्रश्न से उत्तर तक पारदर्शी उत्पत्ति।',
+
+  // ── Solutions ──
+  'solutions.eyebrow': 'समाधान',
+  'solutions.heading': 'विश्वसनीय उत्तरों पर निर्भर हर टीम के लिए बना',
+  'solutions.subtitle': 'निवेश परिश्रम से लेकर जोखिम और अनुपालन तक, Neer आपकी टीमों के काम करने के तरीके के अनुसार अनुकूलित होता है।',
+  'solutions.sol1.title': 'निवेश टीमें',
+  'solutions.sol1.body': 'परिश्रम में तेज़ी लाएँ, प्रतिस्पर्धियों की तुलना करें, और विषयगत शोध को निवेश कथाओं में संश्लेषित करें।',
+  'solutions.sol2.title': 'कॉर्पोरेट रणनीति',
+  'solutions.sol2.body': 'मैक्रो बदलावों की निगरानी करें, बाज़ारों की बेंचमार्किंग करें, और नेतृत्व को निर्णय-स्तरीय सारांश दें।',
+  'solutions.sol3.title': 'जोखिम एवं अनुपालन',
+  'solutions.sol3.body': 'हर प्रतिक्रिया को अनुमतियों, समीक्षा लॉग और सुरक्षा नियंत्रणों के साथ स्वीकृत स्रोतों तक ट्रेस करें।',
+  'solutions.sol4.title': 'एंटरप्राइज़ ज्ञान',
+  'solutions.sol4.body': 'आंतरिक शोध और बाज़ार बुद्धिमत्ता को एक शासित AI अनुभव में एकीकृत करें।',
+
+  // ── Pricing ──
+  'pricing.eyebrow': 'मूल्य निर्धारण',
+  'pricing.heading': 'टीमों के लिए लचीला, एंटरप्राइज़ के लिए संरचित',
+  'pricing.subtitle': 'अपने संगठन के लिए सही रास्ता चुनें।',
+  'pricing.selfServe.name': 'सेल्फ-सर्व',
+  'pricing.selfServe.price': 'कस्टम से शुरू',
+  'pricing.selfServe.description': 'उन छोटी टीमों के लिए जो सुरक्षित, उपयोग-योग्य उत्पाद के साथ तेज़ी से आगे बढ़ना चाहती हैं।',
+  'pricing.selfServe.feature1': 'कोर AI वर्कफ़्लो',
+  'pricing.selfServe.feature2': 'स्रोत उद्धरण',
+  'pricing.selfServe.feature3': 'टीम सहयोग',
+  'pricing.selfServe.feature4': 'मानक सहायता',
+  'pricing.selfServe.cta': 'बातचीत शुरू करें',
+  'pricing.enterprise.name': 'एंटरप्राइज़',
+  'pricing.enterprise.description': 'उन संगठनों के लिए जिन्हें शासन, तैनाती लचीलापन और सुरक्षा समीक्षा की आवश्यकता है।',
+  'pricing.enterprise.feature1': 'निजी तैनाती',
+  'pricing.enterprise.feature2': 'SSO / RBAC',
+  'pricing.enterprise.feature3': 'ऑडिट लॉग',
+  'pricing.enterprise.feature4': 'डेटा नियंत्रण',
+  'pricing.enterprise.feature5': 'सुरक्षा समीक्षा सहायता',
+  'pricing.enterprise.cta': 'बिक्री से बात करें',
+  'pricing.recommended': 'अनुशंसित',
+
+  // ── FAQ ──
+  'faq.eyebrow': 'अक्सर पूछे जाने वाले प्रश्न',
+  'faq.heading': 'एंटरप्राइज़ खरीदारों के लिए उत्तर',
+  'faq.subtitle': 'खरीद, सुरक्षा और व्यावसायिक हितधारकों के सामान्य प्रश्न।',
+  'faq.q1': 'Neer कैसे सुनिश्चित करता है कि उत्तर साक्ष्य पर आधारित हैं?',
+  'faq.a1': 'उत्तर स्वीकृत एंटरप्राइज़ स्रोतों पर आधारित होते हैं, जिनमें उद्धृत साक्ष्य, पुनर्प्राप्ति ट्रेस और उपयोगकर्ताओं को दिखने वाले विश्वास संकेत शामिल हैं।',
+  'faq.q2': 'क्या हम बहुभाषी शोध वर्कफ़्लो का समर्थन कर सकते हैं?',
+  'faq.a2': 'हाँ। उत्पाद बहुभाषी वर्कफ़्लो का समर्थन करता है और क्षेत्रों में सामग्रियों का अनुवाद, सामान्यीकरण और तुलना कर सकता है।',
+  'faq.q3': 'कौन से तैनाती विकल्प उपलब्ध हैं?',
+  'faq.a3': 'Neer सुरक्षित एंटरप्राइज़ तैनाती पैटर्न के लिए डिज़ाइन किया गया है, जिसमें अलग-थलग वातावरण और नियंत्रित एकीकरण शामिल हैं।',
+  'faq.q4': 'सुरक्षा और पहुँच नियंत्रण कैसे काम करते हैं?',
+  'faq.a4': 'Neer भूमिका-आधारित अनुमतियों, ऑडिट ट्रेल और सख्त पहुँच सीमाओं का समर्थन करता है ताकि डेटा शासित और समीक्षा योग्य बना रहे।',
+
+  // ── Footer ──
+  'footer.description': 'एंटरप्राइज़ टीमों के लिए AI वित्तीय बुद्धिमत्ता जिन्हें स्पष्टता, अनुपालन और निर्णय-स्तरीय अंतर्दृष्टि की आवश्यकता है।',
+  'footer.colProduct': 'उत्पाद',
+  'footer.colCompany': 'कंपनी',
+  'footer.linkProduct': 'उत्पाद',
+  'footer.linkPricing': 'मूल्य निर्धारण',
+  'footer.linkAbout': 'हमारे बारे में',
+  'footer.linkContact': 'संपर्क',
+  'footer.linkSources': 'स्रोत',
+
+  // ── Contact Page ──
+  'contact.eyebrow': 'संपर्क',
+  'contact.heading': 'हमसे संपर्क करें',
+  'contact.subtitle': 'अपने संगठन के लिए एक अनुकूलित वॉकथ्रू प्राप्त करें।',
+  'contact.labelName': 'नाम',
+  'contact.labelEmail': 'ईमेल',
+  'contact.labelPhone': 'फ़ोन',
+  'contact.labelMessage': 'संदेश',
+  'contact.placeholderName': 'आपका नाम',
+  'contact.placeholderEmail': 'आपका ईमेल',
+  'contact.placeholderPhone': 'आपका फ़ोन नंबर',
+  'contact.placeholderMessage': 'आपका संदेश',
+  'contact.submit': 'संदेश भेजें',
+  'contact.sending': 'भेज रहे हैं…',
+  'contact.success': 'संदेश सफलतापूर्वक भेजा गया।',
+  'contact.error': 'आपका संदेश भेजने में असमर्थ। कृपया पुनः प्रयास करें।',
+
+  // ── About Page ──
+  'about.eyebrow': 'हमारे बारे में',
+  'about.heading': 'Neer के बारे में',
+  'about.p1': 'Neer Capital की स्थापना सेतु और प्रीति ने की, एक ऐसा दंपति जो सक्रिय स्टॉक चयन के प्रति उत्साही है। प्रीति के पिता, नटराजन, 1980 के दशक से एक इक्विटी निवेशक, ने अस्थिर हर्षद मेहता के दिनों को नेविगेट किया, संपत्ति बनाने और बनाए रखने के कौशल विकसित किए। प्रीति का कहना है कि सेतु की निवेश प्रतिभा उनसे और उनके पिता के प्रभाव से आती है, हालाँकि सेतु असहमत हो सकते हैं!',
+  'about.p2': 'इंजीनियर से बिजनेस मैनेजर बने, सेतु और प्रीति सरल वित्तीय डेटा पर विश्लेषणात्मक दृष्टिकोण लाते हैं। उनके दृष्टिकोण, MBA वित्त पाठ्यक्रमों से आकार लेकर वित्तीय क्षेत्र के अनुभव के बजाय, ताज़गी से गैर-पेशेवर फिर भी व्यावहारिक हैं। Neer, जिसका अर्थ तमिल में "पानी" है, उनके तरल, अनुकूलनीय दृष्टिकोण का प्रतीक है।',
+  'about.p3': 'Neer Capital में आपका स्वागत है और शुभ निवेश!',
+
+  // ── Login Page ──
+  'login.heading': 'वापस स्वागत है',
+  'login.subtitle': 'जारी रखने के लिए अपने खाते में साइन इन करें',
+  'login.emailLabel': 'ईमेल',
+  'login.passwordLabel': 'पासवर्ड',
+  'login.emailPlaceholder': 'name@example.com',
+  'login.submit': 'साइन इन',
+  'login.submitting': 'साइन इन हो रहा है...',
+  'login.orContinue': 'या इसके साथ जारी रखें',
+  'login.google': 'Google',
+  'login.googleConnecting': 'कनेक्ट हो रहा है...',
+  'login.terms': 'साइन इन करके, आप हमारी सेवा की शर्तों और गोपनीयता नीति से सहमत होते हैं।',
+  'login.invalidCredentials': 'अमान्य ईमेल या पासवर्ड',
+  'login.unexpectedError': 'एक अप्रत्याशित त्रुटि हुई',
+  'login.googleFailed': 'Google साइन-इन विफल',
+
+  // ── Sources Page ──
+  'sources.eyebrow': 'स्रोत',
+  'sources.heading': 'हर उत्तर उतना ही मज़बूत है जितने उसके पीछे के स्रोत',
+  'sources.subtitle': 'स्वीकृत स्रोत, आंतरिक दस्तावेज़, लाइव फ़ीड, और ऑडिट योग्य उत्पत्ति।',
+
+  // ── Embed Page ──
+  'embed.placeholder': 'एम्बेड पेज प्लेसहोल्डर।',
+
+  // ── Error Page ──
+  'error.eyebrow': 'कुछ गलत हो गया',
+  'error.heading': 'एक अप्रत्याशित त्रुटि हुई',
+  'error.description': 'समस्या दर्ज कर ली गई है। आप पुनः प्रयास कर सकते हैं, या सुरक्षित स्थान पर लौट सकते हैं।',
+  'error.tryAgain': 'पुनः प्रयास करें',
+  'error.backHome': 'होम पर वापस',
+
+  // ── Not Found Page ──
+  'notFound.eyebrow': 'त्रुटि 404',
+  'notFound.heading': 'यह पृष्ठ नहीं मिल सका',
+  'notFound.description': 'आप जिस पृष्ठ की तलाश कर रहे हैं वह स्थानांतरित हो सकता है, या लिंक पुराना है। आइए आपको विश्वसनीय जगह पर वापस ले चलते हैं।',
+  'notFound.backHome': 'होम पर वापस',
+  'notFound.contactUs': 'हमसे संपर्क करें',
+};
