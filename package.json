@@ -5,11 +5,15 @@
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
-    "start": "prisma migrate deploy && next start",
+    "start": "next start",
     "lint": "next lint",
+    "db:seed": "prisma db seed",
     "test": "playwright test",
     "test:preview": "playwright test --config=playwright.preview.config.ts",
     "analyze": "ANALYZE=true next build"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.mjs"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.2",

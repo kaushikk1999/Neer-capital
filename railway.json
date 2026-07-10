@@ -4,6 +4,7 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
+    "preDeployCommand": "npx prisma migrate deploy && npx prisma db seed",
     "startCommand": "npm run start",
     "healthcheckPath": "/login",
     "healthcheckTimeout": 100,

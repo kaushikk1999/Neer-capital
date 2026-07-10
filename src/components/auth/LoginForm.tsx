@@ -80,9 +80,12 @@ export default function LoginForm({ initialError = "" }: { initialError?: string
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-200 block" htmlFor="password">
-            {t('auth.passwordLabel')}
-          </label>
+          <div className="flex items-center justify-between">
+            <label className="text-sm font-medium text-gray-200 block" htmlFor="password">
+              {t('auth.passwordLabel')}
+            </label>
+            <Link href="/forgot-password" className="text-xs text-blue-400 hover:text-blue-300">Forgot password?</Link>
+          </div>
           <input
             id="password"
             type="password"
@@ -142,7 +145,7 @@ export default function LoginForm({ initialError = "" }: { initialError?: string
 
       <p className="text-center text-sm text-gray-400">
         {t("auth.noAccount")}{" "}
-        <Link href="/signup" className="text-blue-400 hover:text-blue-300 font-medium">{t("auth.createAccount")}</Link>
+        <Link href="/register" className="text-blue-400 hover:text-blue-300 font-medium">{t("auth.createAccount")}</Link>
       </p>
     </div>
   )

@@ -1,13 +1,11 @@
 import NextAuth from "next-auth"
 import { authConfig } from "@/auth.config"
 
-// Uses only the edge-safe config (no Prisma/bcrypt). Unauthenticated requests
-// to matched routes are redirected to /login by the `authorized` callback.
+// Uses only the edge-safe config (no Prisma/bcrypt). Protects the authenticated
+// areas only — the public marketing site and contact form stay open. Guests are
+// redirected to /login; non-admins are redirected away from /admin.
 export const { auth: middleware } = NextAuth(authConfig)
 
 export const config = {
-  // Protect everything except auth endpoints, the login page, and static assets.
-  matcher: [
-    "/((?!api/auth|api/register|login|signup|_next/static|_next/image|favicon.ico|icon|robots.txt|sitemap.xml).*)",
-  ],
+  matcher: ["/dashboard/:path*", "/admin/:path*"],
 }

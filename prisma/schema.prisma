@@ -94,6 +94,11 @@ model AuditLog {
 // Auth Models
 // -----------------------------------------------------------------------------
 
+enum Role {
+  ADMIN
+  USER
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -101,10 +106,12 @@ model User {
   emailVerified DateTime? @map("email_verified")
   image         String?
   passwordHash  String?   @map("password_hash")
-  
+  role          Role      @default(USER)
+
   accounts      Account[]
   sessions      Session[]
- 
+  documents     Document[]
+
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
 
@@ -153,7 +160,125 @@ model VerificationToken {
   identifier String
   token      String
   expires    DateTime
- 
+
   @@unique([identifier, token])
   @@map("verification_tokens")
+}
+
+// -----------------------------------------------------------------------------
+// Document Management Foundation (Milestone 2 — schema only, no processing yet)
+// -----------------------------------------------------------------------------
+
+enum DocumentStatus {
+  DRAFT
+  PROCESSING
+  PUBLISHED
+  FAILED
+}
+
+enum JobStatus {
+  QUEUED
+  RUNNING
+  DONE
+  FAILED
+}
+
+model Document {
+  id           String          @id @default(cuid())
+  title        String
+  description  String?         @db.Text
+  fileName     String          @map("file_name")
+  fileUrl      String?         @map("file_url") @db.Text
+  fileSize     Int?            @map("file_size")
+  mimeType     String?         @map("mime_type")
+  status       DocumentStatus  @default(DRAFT)
+  published    Boolean         @default(false)
+  uploadedById String?         @map("uploaded_by_id")
+  createdAt    DateTime        @default(now()) @map("created_at")
+  updatedAt    DateTime        @updatedAt @map("updated_at")
+
+  uploadedBy   User?           @relation(fields: [uploadedById], references: [id])
+  analyses     DocumentAnalysis[]
+  jobs         AnalysisJob[]
+
+  @@index([uploadedById])
+  @@index([status, published])
+  @@map("documents")
+}
+
+model DocumentAnalysis {
+  id         String            @id @default(cuid())
+  documentId String            @map("document_id")
+  summary    String?           @db.Text
+  model      String?
+  createdAt  DateTime          @default(now()) @map("created_at")
+  updatedAt  DateTime          @updatedAt @map("updated_at")
+
+  document   Document          @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  sections   DocumentSection[]
+  metrics    DocumentMetric[]
+  charts     DocumentChart[]
+
+  @@index([documentId])
+  @@map("document_analyses")
+}
+
+model DocumentSection {
+  id         String           @id @default(cuid())
+  analysisId String           @map("analysis_id")
+  heading    String
+  content    String           @db.Text
+  order      Int              @default(0)
+  createdAt  DateTime         @default(now()) @map("created_at")
+
+  analysis   DocumentAnalysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+
+  @@index([analysisId])
+  @@map("document_sections")
+}
+
+model DocumentMetric {
+  id         String           @id @default(cuid())
+  analysisId String           @map("analysis_id")
+  label      String
+  value      String
+  unit       String?
+  order      Int              @default(0)
+  createdAt  DateTime         @default(now()) @map("created_at")
+
+  analysis   DocumentAnalysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+
+  @@index([analysisId])
+  @@map("document_metrics")
+}
+
+model DocumentChart {
+  id         String           @id @default(cuid())
+  analysisId String           @map("analysis_id")
+  type       String
+  title      String
+  config     Json
+  order      Int              @default(0)
+  createdAt  DateTime         @default(now()) @map("created_at")
+
+  analysis   DocumentAnalysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+
+  @@index([analysisId])
+  @@map("document_charts")
+}
+
+model AnalysisJob {
+  id         String    @id @default(cuid())
+  documentId String    @map("document_id")
+  status     JobStatus @default(QUEUED)
+  error      String?   @db.Text
+  startedAt  DateTime? @map("started_at")
+  finishedAt DateTime? @map("finished_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+
+  document   Document  @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([documentId, status])
+  @@map("analysis_jobs")
 }

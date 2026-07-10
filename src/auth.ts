@@ -13,7 +13,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     // Only register Google when credentials are configured — an empty
     // clientId throws at route init and breaks all of /api/auth.
     ...(process.env.GOOGLE_CLIENT_ID
-      ? [Google({ clientId: process.env.GOOGLE_CLIENT_ID, clientSecret: process.env.GOOGLE_CLIENT_SECRET })]
+      ? [Google({
+          clientId: process.env.GOOGLE_CLIENT_ID,
+          clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+          // Link Google logins to a pre-seeded user with the same email (admins).
+          allowDangerousEmailAccountLinking: true,
+        })]
       : []),
     Credentials({
       credentials: {
@@ -37,7 +42,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (!isValid) return null
 
         // Return only safe fields — never leak passwordHash into the JWT.
-        return { id: user.id, email: user.email, name: user.name }
+        return { id: user.id, email: user.email, name: user.name, role: user.role }
       },
     }),
   ],
