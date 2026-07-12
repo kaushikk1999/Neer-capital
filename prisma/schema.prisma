@@ -111,35 +111,35 @@ model User {
   passwordHash  String?   @map("password_hash")
   role          Role      @default(USER)
 
-  accounts      Account[]
-  sessions      Session[]
-  documents     Document[]
+  accounts  Account[]
+  sessions  Session[]
+  documents Document[]
 
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("users")
 }
 
 model Account {
-  id                 String  @id @default(cuid())
-  userId             String  @map("user_id")
-  type               String
-  provider           String
-  providerAccountId  String  @map("provider_account_id")
-  refresh_token      String? @db.Text
-  access_token       String? @db.Text
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String? @db.Text
-  session_state      String?
- 
-  createdAt          DateTime @default(now()) @map("created_at")
-  updatedAt          DateTime @updatedAt @map("updated_at")
- 
+  id                String  @id @default(cuid())
+  userId            String  @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
- 
+
   @@unique([provider, providerAccountId])
   @@index([userId])
   @@map("accounts")
@@ -151,9 +151,9 @@ model Session {
   userId       String   @map("user_id")
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
- 
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@index([userId])
   @@map("sessions")
@@ -188,26 +188,26 @@ enum JobStatus {
 }
 
 model Document {
-  id           String          @id @default(cuid())
+  id           String         @id @default(cuid())
   title        String
-  slug         String          @unique
-  description  String?         @db.Text
-  fileName     String          @map("file_name")
-  fileUrl      String?         @map("file_url") @db.Text
-  fileSize     Int?            @map("file_size")
-  mimeType     String?         @map("mime_type")
-  storageKey   String          @map("storage_key")
-  status       DocumentStatus  @default(DRAFT)
-  published    Boolean         @default(false)
-  uploadedById String?         @map("uploaded_by_id")
-  createdAt    DateTime        @default(now()) @map("created_at")
-  updatedAt    DateTime        @updatedAt @map("updated_at")
+  slug         String         @unique
+  description  String?        @db.Text
+  fileName     String         @map("file_name")
+  fileUrl      String?        @map("file_url") @db.Text
+  fileSize     Int?           @map("file_size")
+  mimeType     String?        @map("mime_type")
+  storageKey   String         @map("storage_key")
+  status       DocumentStatus @default(DRAFT)
+  published    Boolean        @default(false)
+  uploadedById String?        @map("uploaded_by_id")
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
 
-  uploadedBy   User?             @relation(fields: [uploadedById], references: [id])
-  files        DocumentFile[]
-  versions     DocumentVersion[]
-  analyses     DocumentAnalysis[]
-  jobs         AnalysisJob[]
+  uploadedBy User?              @relation(fields: [uploadedById], references: [id])
+  files      DocumentFile[]
+  versions   DocumentVersion[]
+  analyses   DocumentAnalysis[]
+  jobs       AnalysisJob[]
 
   @@index([uploadedById])
   @@index([status, published])
@@ -215,31 +215,31 @@ model Document {
 }
 
 model DocumentFile {
-  id         String           @id @default(cuid())
-  documentId String           @map("document_id")
-  storageKey String           @unique @map("storage_key")
+  id         String   @id @default(cuid())
+  documentId String   @map("document_id")
+  storageKey String   @unique @map("storage_key")
   filename   String
-  mimeType   String           @map("mime_type")
+  mimeType   String   @map("mime_type")
   size       Int
   checksum   String?
-  createdAt  DateTime         @default(now()) @map("created_at")
+  createdAt  DateTime @default(now()) @map("created_at")
 
-  document   Document         @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  version    DocumentVersion?
+  document Document         @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  version  DocumentVersion?
 
   @@index([documentId])
   @@map("document_files")
 }
 
 model DocumentVersion {
-  id         String       @id @default(cuid())
-  documentId String       @map("document_id")
+  id         String   @id @default(cuid())
+  documentId String   @map("document_id")
   version    Int
-  fileId     String       @unique @map("file_id")
-  createdAt  DateTime     @default(now()) @map("created_at")
+  fileId     String   @unique @map("file_id")
+  createdAt  DateTime @default(now()) @map("created_at")
 
-  document   Document     @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  file       DocumentFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  document Document     @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  file     DocumentFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
 
   @@unique([documentId, version])
   @@index([documentId])
@@ -247,61 +247,70 @@ model DocumentVersion {
 }
 
 model DocumentAnalysis {
-  id         String            @id @default(cuid())
-  documentId String            @map("document_id")
-  summary    String?           @db.Text
-  model      String?
-  createdAt  DateTime          @default(now()) @map("created_at")
-  updatedAt  DateTime          @updatedAt @map("updated_at")
+  id             String   @id @default(cuid())
+  documentId     String   @map("document_id")
+  summary        String?  @db.Text
+  recommendation String?  @db.Text
+  valuation      String?  @db.Text
+  risks          String?  @db.Text
+  confidence     Float?
+  rawData        Json?    @map("raw_data")
+  model          String?
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
 
-  document   Document          @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  sections   DocumentSection[]
-  metrics    DocumentMetric[]
-  charts     DocumentChart[]
+  document Document          @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  sections DocumentSection[]
+  metrics  DocumentMetric[]
+  charts   DocumentChart[]
 
   @@index([documentId])
   @@map("document_analyses")
 }
 
 model DocumentSection {
-  id         String           @id @default(cuid())
-  analysisId String           @map("analysis_id")
-  heading    String
-  content    String           @db.Text
-  order      Int              @default(0)
-  createdAt  DateTime         @default(now()) @map("created_at")
+  id            String   @id @default(cuid())
+  analysisId    String   @map("analysis_id")
+  heading       String
+  content       String   @db.Text
+  sourceExcerpt String?  @map("source_excerpt") @db.Text
+  order         Int      @default(0)
+  createdAt     DateTime @default(now()) @map("created_at")
 
-  analysis   DocumentAnalysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  analysis DocumentAnalysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
 
   @@index([analysisId])
   @@map("document_sections")
 }
 
 model DocumentMetric {
-  id         String           @id @default(cuid())
-  analysisId String           @map("analysis_id")
-  label      String
-  value      String
-  unit       String?
-  order      Int              @default(0)
-  createdAt  DateTime         @default(now()) @map("created_at")
+  id           String   @id @default(cuid())
+  analysisId   String   @map("analysis_id")
+  label        String
+  value        String
+  numericValue Float?   @map("numeric_value")
+  unit         String?
+  period       String?
+  category     String?
+  order        Int      @default(0)
+  createdAt    DateTime @default(now()) @map("created_at")
 
-  analysis   DocumentAnalysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  analysis DocumentAnalysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
 
   @@index([analysisId])
   @@map("document_metrics")
 }
 
 model DocumentChart {
-  id         String           @id @default(cuid())
-  analysisId String           @map("analysis_id")
+  id         String   @id @default(cuid())
+  analysisId String   @map("analysis_id")
   type       String
   title      String
   config     Json
-  order      Int              @default(0)
-  createdAt  DateTime         @default(now()) @map("created_at")
+  order      Int      @default(0)
+  createdAt  DateTime @default(now()) @map("created_at")
 
-  analysis   DocumentAnalysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  analysis DocumentAnalysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
 
   @@index([analysisId])
   @@map("document_charts")
@@ -311,14 +320,17 @@ model AnalysisJob {
   id         String    @id @default(cuid())
   documentId String    @map("document_id")
   status     JobStatus @default(QUEUED)
+  progress   Int       @default(0)
+  attempts   Int       @default(0)
   error      String?   @db.Text
   startedAt  DateTime? @map("started_at")
   finishedAt DateTime? @map("finished_at")
   createdAt  DateTime  @default(now()) @map("created_at")
   updatedAt  DateTime  @updatedAt @map("updated_at")
 
-  document   Document  @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
 
   @@index([documentId, status])
+  @@index([status])
   @@map("analysis_jobs")
 }

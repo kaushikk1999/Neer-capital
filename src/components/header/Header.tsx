@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { navItems } from '@/lib/data';
 import { Button } from '@/components/ui/Button';
 import { AuthButton } from '@/components/auth/AuthButton';
+import { AdminNavLink } from '@/components/auth/AdminNavLink';
 import { cn } from '@/lib/utils';
 import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
@@ -32,6 +33,7 @@ export function Header() {
           ))}
         </nav>
         <div className="hidden items-center gap-3 md:flex">
+          <AdminNavLink className="text-sm text-slate-300 transition hover:text-white" />
           <LanguageSwitcher className="mr-2" />
           <AuthButton />
           <Button href="/contact" variant="primary" size="sm" icon={<ArrowUpRight className="h-4 w-4" />}>
@@ -53,6 +55,7 @@ export function Header() {
                 {t(getNavKey(item.label))}
               </Link>
             ))}
+            <AdminNavLink className="rounded-xl px-3 py-2 text-sm text-slate-200 hover:bg-white/5" onClick={() => setOpen(false)} />
           </div>
         </div>
       </div>
