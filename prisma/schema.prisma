@@ -82,11 +82,14 @@ model AuditLog {
   details    Json?
   customerId String?         @map("customer_id")
   messageId  String?         @map("message_id")
+  userId     String?         @map("user_id")
+  documentId String?         @map("document_id")
   createdAt  DateTime        @default(now()) @map("created_at")
   customer   Customer?       @relation(fields: [customerId], references: [id])
   message    ContactMessage? @relation(fields: [messageId], references: [id])
 
   @@index([event, createdAt])
+  @@index([documentId])
   @@map("audit_logs")
 }
 
@@ -173,6 +176,7 @@ enum DocumentStatus {
   DRAFT
   PROCESSING
   PUBLISHED
+  ARCHIVED
   FAILED
 }
 
@@ -186,24 +190,60 @@ enum JobStatus {
 model Document {
   id           String          @id @default(cuid())
   title        String
+  slug         String          @unique
   description  String?         @db.Text
   fileName     String          @map("file_name")
   fileUrl      String?         @map("file_url") @db.Text
   fileSize     Int?            @map("file_size")
   mimeType     String?         @map("mime_type")
+  storageKey   String          @map("storage_key")
   status       DocumentStatus  @default(DRAFT)
   published    Boolean         @default(false)
   uploadedById String?         @map("uploaded_by_id")
   createdAt    DateTime        @default(now()) @map("created_at")
   updatedAt    DateTime        @updatedAt @map("updated_at")
 
-  uploadedBy   User?           @relation(fields: [uploadedById], references: [id])
+  uploadedBy   User?             @relation(fields: [uploadedById], references: [id])
+  files        DocumentFile[]
+  versions     DocumentVersion[]
   analyses     DocumentAnalysis[]
   jobs         AnalysisJob[]
 
   @@index([uploadedById])
   @@index([status, published])
   @@map("documents")
+}
+
+model DocumentFile {
+  id         String           @id @default(cuid())
+  documentId String           @map("document_id")
+  storageKey String           @unique @map("storage_key")
+  filename   String
+  mimeType   String           @map("mime_type")
+  size       Int
+  checksum   String?
+  createdAt  DateTime         @default(now()) @map("created_at")
+
+  document   Document         @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  version    DocumentVersion?
+
+  @@index([documentId])
+  @@map("document_files")
+}
+
+model DocumentVersion {
+  id         String       @id @default(cuid())
+  documentId String       @map("document_id")
+  version    Int
+  fileId     String       @unique @map("file_id")
+  createdAt  DateTime     @default(now()) @map("created_at")
+
+  document   Document     @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  file       DocumentFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@unique([documentId, version])
+  @@index([documentId])
+  @@map("document_versions")
 }
 
 model DocumentAnalysis {

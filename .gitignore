@@ -7,8 +7,12 @@ node_modules
 # contact thread store (runtime data)
 /.data
 
+# local document storage (files live outside the repo)
+/.storage
+
 # test artifacts
 /playwright-report
 /test-results
 /playwright/.cache
 tsconfig.tsbuildinfo
+.DS_Store
