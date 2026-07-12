@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db"
 import { requireApiAdmin } from "@/lib/api-auth"
 
 export const runtime = "nodejs"
+export const dynamic = "force-dynamic"
 
 export async function GET() {
   const guard = await requireApiAdmin()

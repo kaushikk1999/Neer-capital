@@ -2,6 +2,8 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
 
 export const runtime = "nodejs"
+// Queries the DB per request — never statically pre-render (build has no DB).
+export const dynamic = "force-dynamic"
 
 // Public — published documents only. Never exposes drafts or archived docs.
 export async function GET() {
