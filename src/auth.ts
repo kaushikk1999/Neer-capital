@@ -54,10 +54,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.role = (user as { role?: "ADMIN" | "USER" }).role
       }
       // Google/OAuth adapter users don't carry `role`; resolve it from the DB
-      // once so seeded admins get ADMIN in their token (not the USER fallback).
-      if (!token.role && token.email) {
-        const dbUser = await prisma.user.findUnique({
-          where: { email: token.email },
+      // (by user id or email) so seeded admins get ADMIN, not the USER fallback.
+      if (!token.role && (token.sub || token.email)) {
+        const dbUser = await prisma.user.findFirst({
+          where: { OR: [{ id: token.sub ?? "" }, { email: token.email ?? "" }] },
           select: { id: true, role: true },
         })
         if (dbUser) {
