@@ -23,6 +23,7 @@ export default async function DashboardPage() {
       <div className="mt-12 grid gap-6 sm:grid-cols-2">
         <Card title="Your account" className="h-full">
           <p className="mt-3 text-sm leading-6 text-slate-300">Manage your profile and session. Document insights will appear here in a future release.</p>
+          <div className="mt-5"><Button href="/dashboard/account" size="sm" variant="secondary">View Account</Button></div>
         </Card>
         {isAdmin && (
           <Card title="Administration" className="h-full">
