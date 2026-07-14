@@ -49,20 +49,21 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
     ...authConfig.callbacks,
     async jwt({ token, user }) {
-      if (user) {
-        token.uid = user.id
-        token.role = (user as { role?: "ADMIN" | "USER" }).role
-      }
-      // Google/OAuth adapter users don't carry `role`; resolve it from the DB
-      // (by user id or email) so seeded admins get ADMIN, not the USER fallback.
-      if (!token.role && (token.sub || token.email)) {
-        const dbUser = await prisma.user.findFirst({
-          where: { OR: [{ id: token.sub ?? "" }, { email: token.email ?? "" }] },
-          select: { id: true, role: true },
-        })
-        if (dbUser) {
-          token.uid = dbUser.id
-          token.role = dbUser.role
+      // Resolve the authoritative role straight from the DB. OAuth (Google)
+      // adapter users don't include `role`, so we look it up by the user's id
+      // or email — on sign-in, or any request where the token lacks a role.
+      const id = user?.id ?? (token.uid as string | undefined) ?? token.sub
+      const email = user?.email ?? (token.email as string | undefined)
+      if (user || !token.role) {
+        if (id || email) {
+          const dbUser = await prisma.user.findFirst({
+            where: { OR: [{ id: id ?? "" }, { email: email ?? "" }] },
+            select: { id: true, role: true },
+          })
+          if (dbUser) {
+            token.uid = dbUser.id
+            token.role = dbUser.role
+          }
         }
       }
       return token
