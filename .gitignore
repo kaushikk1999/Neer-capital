@@ -10,6 +10,9 @@ node_modules
 # local document storage (files live outside the repo)
 /.storage
 
+# loose PDFs in repo root (test inputs / research reports — never app assets)
+/*.pdf
+
 # test artifacts
 /playwright-report
 /test-results

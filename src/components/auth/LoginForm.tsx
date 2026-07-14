@@ -5,6 +5,7 @@ import Link from "next/link"
 import { signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useLanguage } from '@/lib/i18n/LanguageContext';
+import { PasswordInput } from '@/components/auth/PasswordInput';
 
 export default function LoginForm({ initialError = "" }: { initialError?: string }) {
   const router = useRouter()
@@ -86,9 +87,8 @@ export default function LoginForm({ initialError = "" }: { initialError?: string
             </label>
             <Link href="/forgot-password" className="text-xs text-blue-400 hover:text-blue-300">Forgot password?</Link>
           </div>
-          <input
+          <PasswordInput
             id="password"
-            type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required

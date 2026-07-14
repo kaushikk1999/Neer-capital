@@ -5,6 +5,7 @@ import Link from "next/link"
 import { signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useLanguage } from "@/lib/i18n/LanguageContext"
+import { PasswordInput } from "@/components/auth/PasswordInput"
 
 const field = "w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-500 transition-colors"
 
@@ -71,7 +72,7 @@ export default function SignupForm() {
         </div>
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-200 block" htmlFor="password">{t("auth.passwordLabel")}</label>
-          <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} className={field} placeholder="••••••••" />
+          <PasswordInput id="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} className={field} placeholder="••••••••" />
         </div>
         <button type="submit" disabled={loading} className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors">
           {loading ? t("auth.creating") : t("auth.signUpBtn")}
