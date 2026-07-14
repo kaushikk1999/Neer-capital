@@ -21,6 +21,7 @@ export const authConfig = {
       if (session.user) {
         session.user.id = (token.uid as string) ?? session.user.id
         session.user.role = (token.role as "ADMIN" | "USER") ?? "USER"
+        if (token.email) session.user.email = token.email as string
       }
       return session
     },

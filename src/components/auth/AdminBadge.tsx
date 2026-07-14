@@ -9,7 +9,8 @@ export function AdminBadge({ className = '' }: { className?: string }) {
   const { data } = useSession();
   
   const adminEmails = ['kaushikds1999@gmail.com', 'comms.neercapital@gmail.com'];
-  const isEmailAdmin = data?.user?.email && adminEmails.includes(data.user.email);
+  const userEmail = data?.user?.email?.toLowerCase();
+  const isEmailAdmin = userEmail && adminEmails.includes(userEmail);
   const isRoleAdmin = data?.user?.role === 'ADMIN';
 
   if (!isEmailAdmin && !isRoleAdmin) return null;
