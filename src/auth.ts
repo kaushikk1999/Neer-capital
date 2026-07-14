@@ -46,4 +46,26 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
     }),
   ],
+  callbacks: {
+    ...authConfig.callbacks,
+    async jwt({ token, user }) {
+      if (user) {
+        token.uid = user.id
+        token.role = (user as { role?: "ADMIN" | "USER" }).role
+      }
+      // Google/OAuth adapter users don't carry `role`; resolve it from the DB
+      // once so seeded admins get ADMIN in their token (not the USER fallback).
+      if (!token.role && token.email) {
+        const dbUser = await prisma.user.findUnique({
+          where: { email: token.email },
+          select: { id: true, role: true },
+        })
+        if (dbUser) {
+          token.uid = dbUser.id
+          token.role = dbUser.role
+        }
+      }
+      return token
+    },
+  },
 })
