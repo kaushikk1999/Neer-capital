@@ -1,5 +1,6 @@
 import type { FAQItem, NavItem, Pillar, PricingPlan, Solution, Stat, WorkflowStep } from './types';
 export const navItems: NavItem[] = [
+  { label: 'Dashboard', href: '/dashboard/account' },
   { label: 'Product', href: '/#product' },
   { label: 'Solutions', href: '/#solutions' },
   { label: 'Pricing', href: '/#pricing' },

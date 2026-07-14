@@ -7,6 +7,7 @@ export const hi: TranslationDict = {
   'lang.ta': 'தமிழ்',
 
   // ── Nav ──
+  'nav.dashboard': 'डैशबोर्ड',
   'nav.product': 'उत्पाद',
   'nav.solutions': 'समाधान',
   'nav.pricing': 'मूल्य निर्धारण',
