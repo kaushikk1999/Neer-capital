@@ -7,11 +7,17 @@ import { ShieldCheck } from 'lucide-react';
 // guards on /admin remain the authoritative access control.
 export function AdminBadge({ className = '' }: { className?: string }) {
   const { data } = useSession();
-  if (data?.user?.role !== 'ADMIN') return null;
+  
+  const adminEmails = ['kaushikds1999@gmail.com', 'comms.neercapital@gmail.com'];
+  const isEmailAdmin = data?.user?.email && adminEmails.includes(data.user.email);
+  const isRoleAdmin = data?.user?.role === 'ADMIN';
+
+  if (!isEmailAdmin && !isRoleAdmin) return null;
+
   return (
     <span
       className={`inline-flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2.5 py-1 text-xs font-medium text-emerald-300 ${className}`}
-      title={`Logged in as admin${data.user.email ? ` (${data.user.email})` : ''}`}
+      title={`Logged in as admin${data?.user?.email ? ` (${data.user.email})` : ''}`}
     >
       <ShieldCheck className="h-3.5 w-3.5" />
       Logged in as admin

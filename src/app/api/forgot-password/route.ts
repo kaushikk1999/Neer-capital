@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
   const site = process.env.AUTH_URL || process.env.NEXT_PUBLIC_SITE_URL || new URL(req.url).origin
   const link = `${site}/reset-password?token=${token}&email=${encodeURIComponent(email)}`
   try {
-    await new Resend(apiKey).emails.send({
+    const { data, error } = await new Resend(apiKey).emails.send({
       from: process.env.CONTACT_FROM || "Neer <onboarding@resend.dev>",
       to: email,
       subject: "Reset your Neer Capital password",
@@ -34,8 +34,12 @@ export async function POST(req: NextRequest) {
 <p><a href="${link}">Click here to reset it</a> (valid for 1 hour).</p>
 <p>If you didn't request this, you can ignore this email.</p>`,
     })
-  } catch {
-    // Swallow — never reveal delivery state to the caller.
+    // Never reveal delivery state to the caller, but log it server-side so a
+    // misconfigured sender (unverified domain, bad key) is diagnosable.
+    if (error) console.error("[forgot-password] Resend error:", JSON.stringify(error))
+    else console.log("[forgot-password] Resend accepted, id:", data?.id)
+  } catch (e) {
+    console.error("[forgot-password] Resend threw:", e instanceof Error ? e.message : String(e))
   }
   return ok
 }
