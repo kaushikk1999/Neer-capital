@@ -34,7 +34,6 @@ export function Header() {
           ))}
         </nav>
         <div className="hidden items-center gap-3 md:flex">
-          <AdminNavLink className="text-sm text-slate-300 transition hover:text-white" />
           <LanguageSwitcher className="mr-2" />
           <AdminBadge />
           <AuthButton />
@@ -57,7 +56,6 @@ export function Header() {
                 {t(getNavKey(item.label))}
               </Link>
             ))}
-            <AdminNavLink className="rounded-xl px-3 py-2 text-sm text-slate-200 hover:bg-white/5" onClick={() => setOpen(false)} />
           </div>
         </div>
       </div>
