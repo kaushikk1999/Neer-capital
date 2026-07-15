@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
 
+export const dynamic = 'force-dynamic'
+
 // ONE-TIME database fix: Move the mislinked Google Account for kaushikds1999@gmail.com
 // from the kaushikka99 user to the correct seeded ADMIN user.
 // This endpoint will be removed after the fix is applied.

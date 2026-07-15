@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
 
+export const dynamic = 'force-dynamic'
+
 // Temporary diagnostic endpoint — no secrets exposed, only safe fields.
 // Will be removed after debugging the identity bug.
 export async function GET() {
