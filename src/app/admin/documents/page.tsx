@@ -11,10 +11,18 @@ export default async function AdminDocumentsPage() {
   await requireAdmin()
   const docs = await prisma.document.findMany({
     orderBy: { createdAt: "desc" },
-    select: { id: true, title: true, slug: true, fileName: true, fileSize: true, status: true, published: true, createdAt: true },
+    include: {
+      analyses: { orderBy: { createdAt: "desc" }, take: 1 },
+      jobs: { orderBy: { createdAt: "desc" }, take: 1 }
+    }
   })
   // Serialize dates for the client component.
-  const documents = docs.map((d) => ({ ...d, createdAt: d.createdAt.toISOString() }))
+  const documents = docs.map((d) => ({ 
+    ...d, 
+    createdAt: d.createdAt.toISOString(),
+    analyses: d.analyses.map(a => ({ ...a, createdAt: a.createdAt.toISOString(), updatedAt: a.updatedAt.toISOString() })),
+    jobs: d.jobs.map(j => ({ ...j, createdAt: j.createdAt.toISOString(), updatedAt: j.updatedAt.toISOString(), startedAt: j.startedAt?.toISOString(), heartbeatAt: j.heartbeatAt?.toISOString(), finishedAt: j.finishedAt?.toISOString() }))
+  }))
 
   return (
     <section className="mx-auto w-full max-w-6xl px-4 py-24 sm:px-6 lg:px-8">

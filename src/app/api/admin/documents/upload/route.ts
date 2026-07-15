@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
 import { requireApiAdmin, audit } from "@/lib/api-auth"
-import { putObject } from "@/lib/storage"
+import { putObject, deleteObject } from "@/lib/storage"
 import {
   validatePdf, sanitizeFilename, generateStorageKey, checksum, uniqueSlug, MAX_FILE_SIZE,
 } from "@/lib/documents"
@@ -28,7 +28,8 @@ export async function POST(req: NextRequest) {
   const displayName = sanitizeFilename(file.name)
   const title = titleRaw || displayName.replace(/\.pdf$/i, "")
   const slug = await uniqueSlug(title)
-  const storageKey = generateStorageKey()
+  const documentId = crypto.randomUUID()
+  const storageKey = generateStorageKey(documentId)
 
   try {
     await putObject(storageKey, buffer)
@@ -39,6 +40,7 @@ export async function POST(req: NextRequest) {
   try {
     const document = await prisma.document.create({
       data: {
+        id: documentId,
         title,
         slug,
         fileName: displayName,
@@ -57,6 +59,13 @@ export async function POST(req: NextRequest) {
             checksum: checksum(buffer),
           },
         },
+        jobs: {
+          create: {
+            status: "QUEUED",
+            progress: 0,
+            attempts: 0,
+          },
+        },
       },
       include: { files: true },
     })
@@ -65,7 +74,12 @@ export async function POST(req: NextRequest) {
     })
     await audit("document.uploaded", { userId: session.user.id, documentId: document.id, details: { title, size: file.size } })
     return NextResponse.json({ ok: true, id: document.id, slug: document.slug })
-  } catch {
+  } catch (err) {
+    try {
+      await deleteObject(storageKey)
+    } catch {
+      // Best effort cleanup
+    }
     return NextResponse.json({ error: "Failed to save document metadata." }, { status: 500 })
   }
 }

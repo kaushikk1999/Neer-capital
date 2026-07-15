@@ -31,8 +31,9 @@ export function slugify(title: string): string {
 }
 
 // Server-generated, opaque storage key — client filename is never used as a key.
-export function generateStorageKey(): string {
-  return `documents/${crypto.randomUUID()}.pdf`
+export function generateStorageKey(documentId?: string): string {
+  const docId = documentId || crypto.randomUUID()
+  return `documents/${docId}/${crypto.randomUUID()}.pdf`
 }
 
 export function checksum(buf: Buffer): string {
