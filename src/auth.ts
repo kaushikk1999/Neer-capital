@@ -54,21 +54,24 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
     ...authConfig.callbacks,
     async jwt({ token, user }) {
-      // Resolve the authoritative role straight from the DB. OAuth (Google)
-      // adapter users don't include `role`, so we look it up by the user's id
-      // or email — on sign-in, or any request where the token lacks a role.
-      const id = user?.id ?? (token.uid as string | undefined) ?? token.sub
-      const email = user?.email ?? (token.email as string | undefined)
-      if (user || !token.role) {
-        if (id || email) {
-          const dbUser = await prisma.user.findFirst({
-            where: { OR: [{ id: id ?? "" }, { email: email ?? "" }] },
-            select: { id: true, role: true },
-          })
-          if (dbUser) {
-            token.uid = dbUser.id
-            token.role = dbUser.role
-          }
+      // On initial sign-in, persist the user's id into the token.
+      if (user) {
+        token.uid = user.id
+        token.sub = user.id
+      }
+
+      // Resolve the authoritative role from the DB using only the trusted
+      // user ID. Never use findFirst or OR — that can return the wrong user.
+      const uid = (token.uid as string | undefined) ?? token.sub
+      if (uid && (user || !token.role)) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: uid },
+          select: { id: true, role: true, email: true },
+        })
+        if (dbUser) {
+          token.uid = dbUser.id
+          token.role = dbUser.role
+          token.email = dbUser.email
         }
       }
       return token
