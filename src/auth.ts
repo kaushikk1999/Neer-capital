@@ -18,6 +18,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           clientSecret: process.env.GOOGLE_CLIENT_SECRET,
           // Link Google logins to a pre-seeded user with the same email (admins).
           allowDangerousEmailAccountLinking: true,
+          authorization: {
+            params: {
+              prompt: "select_account",
+            },
+          },
         })]
       : []),
     Credentials({

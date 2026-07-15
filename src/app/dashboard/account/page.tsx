@@ -14,6 +14,8 @@ export default async function AccountPage() {
   const dbUser = await prisma.user.findUnique({
     where: { id: session.user.id },
     select: {
+      email: true,
+      name: true,
       createdAt: true,
       accounts: { select: { provider: true } },
     },
@@ -50,8 +52,8 @@ export default async function AccountPage() {
               </div>
             )}
             <div className="min-w-0 flex-1">
-              <p className="text-lg font-medium text-white truncate">{session.user.name || "User"}</p>
-              <p className="text-sm text-slate-400 truncate">{session.user.email}</p>
+              <p className="text-lg font-medium text-white truncate">{dbUser?.name || session.user.name || "User"}</p>
+              <p className="text-sm text-slate-400 truncate">{dbUser?.email || session.user.email}</p>
             </div>
           </div>
         </Card>
