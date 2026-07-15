@@ -180,6 +180,14 @@ enum DocumentStatus {
   FAILED
 }
 
+enum AnalysisStatus {
+  PROCESSING
+  REVIEW_REQUIRED
+  APPROVED
+  SUPERSEDED
+  FAILED
+}
+
 enum JobStatus {
   QUEUED
   RUNNING
@@ -188,26 +196,28 @@ enum JobStatus {
 }
 
 model Document {
-  id           String         @id @default(cuid())
-  title        String
-  slug         String         @unique
-  description  String?        @db.Text
-  fileName     String         @map("file_name")
-  fileUrl      String?        @map("file_url") @db.Text
-  fileSize     Int?           @map("file_size")
-  mimeType     String?        @map("mime_type")
-  storageKey   String         @map("storage_key")
-  status       DocumentStatus @default(DRAFT)
-  published    Boolean        @default(false)
-  uploadedById String?        @map("uploaded_by_id")
-  createdAt    DateTime       @default(now()) @map("created_at")
-  updatedAt    DateTime       @updatedAt @map("updated_at")
+  id                  String         @id @default(cuid())
+  title               String
+  slug                String         @unique
+  description         String?        @db.Text
+  fileName            String         @map("file_name")
+  fileUrl             String?        @map("file_url") @db.Text
+  fileSize            Int?           @map("file_size")
+  mimeType            String?        @map("mime_type")
+  storageKey          String         @map("storage_key")
+  status              DocumentStatus @default(DRAFT)
+  published           Boolean        @default(false)
+  publishedAnalysisId String?        @unique @map("published_analysis_id")
+  uploadedById        String?        @map("uploaded_by_id")
+  createdAt           DateTime       @default(now()) @map("created_at")
+  updatedAt           DateTime       @updatedAt @map("updated_at")
 
-  uploadedBy User?              @relation(fields: [uploadedById], references: [id])
-  files      DocumentFile[]
-  versions   DocumentVersion[]
-  analyses   DocumentAnalysis[]
-  jobs       AnalysisJob[]
+  uploadedBy        User?              @relation(fields: [uploadedById], references: [id])
+  files             DocumentFile[]
+  versions          DocumentVersion[]
+  publishedAnalysis DocumentAnalysis?  @relation("PublishedAnalysis", fields: [publishedAnalysisId], references: [id])
+  analyses          DocumentAnalysis[] @relation("DocumentAnalyses")
+  jobs              AnalysisJob[]
 
   @@index([uploadedById])
   @@index([status, published])
@@ -247,22 +257,24 @@ model DocumentVersion {
 }
 
 model DocumentAnalysis {
-  id             String   @id @default(cuid())
-  documentId     String   @map("document_id")
-  summary        String?  @db.Text
-  recommendation String?  @db.Text
-  valuation      String?  @db.Text
-  risks          String?  @db.Text
+  id             String         @id @default(cuid())
+  documentId     String         @map("document_id")
+  status         AnalysisStatus @default(PROCESSING)
+  summary        String?        @db.Text
+  recommendation String?        @db.Text
+  valuation      String?        @db.Text
+  risks          String?        @db.Text
   confidence     Float?
-  rawData        Json?    @map("raw_data")
+  rawData        Json?          @map("raw_data")
   model          String?
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
 
-  document Document          @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  sections DocumentSection[]
-  metrics  DocumentMetric[]
-  charts   DocumentChart[]
+  document             Document          @relation("DocumentAnalyses", fields: [documentId], references: [id], onDelete: Cascade)
+  publishedForDocument Document?         @relation("PublishedAnalysis")
+  sections             DocumentSection[]
+  metrics              DocumentMetric[]
+  charts               DocumentChart[]
 
   @@index([documentId])
   @@map("document_analyses")
@@ -317,16 +329,17 @@ model DocumentChart {
 }
 
 model AnalysisJob {
-  id         String    @id @default(cuid())
-  documentId String    @map("document_id")
-  status     JobStatus @default(QUEUED)
-  progress   Int       @default(0)
-  attempts   Int       @default(0)
-  error      String?   @db.Text
-  startedAt  DateTime? @map("started_at")
-  finishedAt DateTime? @map("finished_at")
-  createdAt  DateTime  @default(now()) @map("created_at")
-  updatedAt  DateTime  @updatedAt @map("updated_at")
+  id          String    @id @default(cuid())
+  documentId  String    @map("document_id")
+  status      JobStatus @default(QUEUED)
+  progress    Int       @default(0)
+  attempts    Int       @default(0)
+  error       String?   @db.Text
+  startedAt   DateTime? @map("started_at")
+  heartbeatAt DateTime? @map("heartbeat_at")
+  finishedAt  DateTime? @map("finished_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
 
   document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
 
