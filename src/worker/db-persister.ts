@@ -46,7 +46,14 @@ export class DbPersister {
     
     // Phase 10: Transactional Persistence
     await prisma.$transaction(async (tx) => {
-      
+
+      // 0. Retire any previous analysis for this document so a reprocess
+      // leaves exactly one active result instead of duplicates.
+      await tx.documentAnalysis.updateMany({
+        where: { documentId, status: { not: "SUPERSEDED" } },
+        data: { status: "SUPERSEDED" },
+      })
+
       // 1. Create the DocumentAnalysis record
       const analysis = await tx.documentAnalysis.create({
         data: {

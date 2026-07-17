@@ -25,7 +25,8 @@ async function processJob(job: any, manager: JobManager) {
     console.log(`[Worker] Extraction complete. Classification: ${extraction.classification}, Pages: ${extraction.pageCount}, Text Length: ${extraction.totalTextLength}`)
     
     if (extraction.classification === "CORRUPTED" || extraction.classification === "UNSUPPORTED") {
-      throw new Error(`Terminal extraction failure: ${extraction.classification}`)
+      const detail = extraction.failureReason ? `: ${extraction.failureReason}` : ""
+      throw new Error(`Terminal extraction failure: ${extraction.classification}${detail}`)
     }
     
     if (extraction.classification === "OCR_REQUIRED") {

@@ -2,7 +2,9 @@ import { Ollama } from 'ollama'
 import { ExtractionResult } from './pdf-extractor'
 import { AnalysisContractSchema, analysisJsonSchema } from './ai-schema'
 
-const OLLAMA_URL = process.env.OLLAMA_API_URL || 'https://api.ollama.com'
+// Deployment sets OLLAMA_BASE_URL; OLLAMA_API_URL is kept as a fallback so
+// either name works and the configured endpoint is never silently ignored.
+const OLLAMA_URL = process.env.OLLAMA_BASE_URL || process.env.OLLAMA_API_URL || 'https://api.ollama.com'
 const OLLAMA_KEY = process.env.OLLAMA_API_KEY || ''
 const MODEL = process.env.OLLAMA_MODEL || 'gemma4:31b-cloud'
 

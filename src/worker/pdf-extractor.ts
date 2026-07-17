@@ -18,6 +18,8 @@ export interface ExtractionResult {
   pages: ExtractedPage[]
   totalTextLength: number
   pageCount: number
+  /** Underlying parser message when classification is CORRUPTED. */
+  failureReason?: string
 }
 
 // Simple heuristic for scanned documents:
@@ -42,12 +44,22 @@ export class PdfExtractor {
     try {
       return await this.extractFromBuffer(buffer)
     } catch (error) {
+      // A TypeError here means the parser itself is unusable (e.g. a wrong
+      // pdf-parse major version whose export is not callable) — that is a
+      // deployment fault, not a bad document. Surface it instead of blaming
+      // the PDF, otherwise every upload looks CORRUPTED.
+      if (error instanceof TypeError) {
+        console.error(`[PdfExtractor] Parser unusable while reading ${storageKey}:`, error)
+        throw new Error(`PDF parser misconfigured: ${error.message}`)
+      }
+      const reason = error instanceof Error ? error.message : String(error)
       console.error(`[PdfExtractor] Corrupted or unparseable PDF ${storageKey}:`, error)
       return {
         classification: "CORRUPTED",
         pages: [],
         totalTextLength: 0,
         pageCount: 0,
+        failureReason: reason,
       }
     }
   }
