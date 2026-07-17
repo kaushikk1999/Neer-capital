@@ -86,6 +86,7 @@ async function main() {
     }
 
     try {
+      console.log(`[Worker] Polling for jobs... (Current time: ${new Date().toISOString()})`)
       const job = await manager.claimNextJob()
       
       if (job) {
