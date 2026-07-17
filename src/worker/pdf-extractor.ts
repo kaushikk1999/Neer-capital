@@ -1,4 +1,8 @@
-const pdfParse = require("pdf-parse")
+import pdfParseImport from "pdf-parse"
+// Fallback for CommonJS/ESM interop
+const pdfParse = (typeof pdfParseImport === "function") 
+  ? pdfParseImport 
+  : (pdfParseImport as any).default || pdfParseImport
 import { getObject } from "@/lib/storage"
 
 export type PdfClassification =
