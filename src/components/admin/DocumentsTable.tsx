@@ -89,6 +89,10 @@ export default function DocumentsTable({ documents }: { documents: Doc[] }) {
                        <button onClick={() => router.push(`/admin/documents/${d.slug}/review`)} className="rounded-md border border-blue-400/30 px-2 py-1 text-blue-200 hover:bg-blue-400/10">Review Draft</button>
                     )}
                     
+                    {d.published && (
+                       <button onClick={() => router.push(`/reports/${d.slug}`)} className="rounded-md border border-emerald-400/30 px-2 py-1 text-emerald-200 hover:bg-emerald-400/10">View Report</button>
+                    )}
+                    
                     {d.published
                       ? <button disabled={busy === d.id} onClick={() => act(d.id, "/unpublish", "PATCH")} className="rounded-md border border-white/10 px-2 py-1 text-slate-200 hover:bg-white/5 disabled:opacity-50">Unpublish</button>
                       : null}
