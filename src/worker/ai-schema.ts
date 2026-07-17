@@ -53,5 +53,4 @@ export const AnalysisContractSchema = z.object({
 
 export type AnalysisContract = z.infer<typeof AnalysisContractSchema>
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const analysisJsonSchema = zodToJsonSchema(AnalysisContractSchema as any, "AnalysisContract")

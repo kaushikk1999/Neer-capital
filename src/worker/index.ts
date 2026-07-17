@@ -7,7 +7,6 @@ import { prisma } from "@/lib/db"
 const POLL_INTERVAL_MS = 5000
 const RECOVERY_INTERVAL_MS = 60000
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function processJob(job: any, manager: JobManager) {
   console.log(`[Worker] Starting job ${job.id} for document ${job.documentId}`)
   

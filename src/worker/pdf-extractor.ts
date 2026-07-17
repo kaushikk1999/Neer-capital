@@ -1,4 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const pdfParse = require("pdf-parse")
 import { getObject } from "@/lib/storage"
 
@@ -61,7 +60,6 @@ export class PdfExtractor {
     const pages: ExtractedPage[] = []
     
     // pdf-parse allows a custom render callback per page
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     function renderPage(pageData: any) {
       const renderOptions = {
         normalizeWhitespace: false,

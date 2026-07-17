@@ -33,7 +33,6 @@ export class DbPersister {
     return isNaN(num) ? null : num
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public async persistAnalysis(jobId: string, documentId: string, data: AnalysisContract, rawResponse: any, modelName: string) {
     console.log(`[DbPersister] Persisting analysis for document ${documentId}`)
     

@@ -144,7 +144,7 @@ export default async function AdminReviewPage({ params }: { params: { slug: stri
                     <p className="text-gray-300 leading-relaxed whitespace-pre-wrap">{section.content}</p>
                     {section.sourceExcerpt && (
                       <blockquote className="pl-4 border-l-2 border-blue-500/30 text-sm text-gray-500 italic">
-                        "{section.sourceExcerpt}"
+                        &quot;{section.sourceExcerpt}&quot;
                       </blockquote>
                     )}
                   </div>
@@ -168,7 +168,7 @@ export default async function AdminReviewPage({ params }: { params: { slug: stri
                     <li key={i} className="pl-4 border-l border-red-500/30">
                       <strong className="text-white block mb-1 text-lg">{risk.risk}</strong>
                       <span className="text-gray-400 block mb-3 leading-relaxed">{risk.explanation}</span>
-                      <em className="text-xs text-red-400/70 bg-red-950/50 px-2 py-1 rounded inline-block">Source: "{risk.evidence}"</em>
+                      <em className="text-xs text-red-400/70 bg-red-950/50 px-2 py-1 rounded inline-block">Source: &quot;{risk.evidence}&quot;</em>
                     </li>
                   ))}
                 </ul>
