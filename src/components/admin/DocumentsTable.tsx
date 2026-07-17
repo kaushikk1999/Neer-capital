@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 
 type Doc = {
@@ -20,6 +20,14 @@ export default function DocumentsTable({ documents }: { documents: Doc[] }) {
   const router = useRouter()
   const [busy, setBusy] = useState<string | null>(null)
   const [error, setError] = useState("")
+
+  useEffect(() => {
+    // Automatically refresh the server component data every 5 seconds
+    const interval = setInterval(() => {
+      router.refresh()
+    }, 5000)
+    return () => clearInterval(interval)
+  }, [router])
 
   const act = async (id: string, path: string, method: "PATCH" | "DELETE") => {
     setBusy(id); setError("")

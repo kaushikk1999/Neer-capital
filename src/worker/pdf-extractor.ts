@@ -1,4 +1,5 @@
-import pdfParseImport from "pdf-parse"
+// Use require to avoid TS default export errors with @types/pdf-parse
+const pdfParseImport = require("pdf-parse")
 // Fallback for CommonJS/ESM interop
 const pdfParse = (typeof pdfParseImport === "function") 
   ? pdfParseImport 
