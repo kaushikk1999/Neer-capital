@@ -9,7 +9,7 @@ const modules = [
   { title: "Document Upload", desc: "Upload PDF documents.", icon: FileUp, href: "/admin/upload" },
   { title: "Document Management", desc: "Browse, publish, and organize documents.", icon: FolderKanban, href: "/admin/documents" },
   { title: "Publish", desc: "Publish documents to public pages.", icon: Send, href: "/admin/documents" },
-  { title: "Reprocess", desc: "Re-run analysis on existing documents.", icon: RefreshCw },
+  { title: "Reprocess", desc: "Re-run analysis on existing documents.", icon: RefreshCw, href: "/admin/documents" },
   { title: "Users", desc: "Manage users and roles.", icon: Users },
   { title: "Settings", desc: "Configure the workspace.", icon: Settings },
 ]
