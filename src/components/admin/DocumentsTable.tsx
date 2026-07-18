@@ -29,7 +29,7 @@ export default function DocumentsTable({ documents }: { documents: Doc[] }) {
     return () => clearInterval(interval)
   }, [router])
 
-  const act = async (id: string, path: string, method: "PATCH" | "DELETE") => {
+  const act = async (id: string, path: string, method: "POST" | "PATCH" | "DELETE") => {
     setBusy(id); setError("")
     try {
       const res = await fetch(`/api/admin/documents/${id}${path}`, { method })
@@ -105,6 +105,10 @@ export default function DocumentsTable({ documents }: { documents: Doc[] }) {
                       ? <button disabled={busy === d.id} onClick={() => act(d.id, "/unpublish", "PATCH")} className="rounded-md border border-white/10 px-2 py-1 text-slate-200 hover:bg-white/5 disabled:opacity-50">Unpublish</button>
                       : null}
                     
+                    {(!d.jobs[0] || (d.jobs[0].status !== "QUEUED" && d.jobs[0].status !== "RUNNING")) && (
+                      <button disabled={busy === d.id} onClick={() => act(d.id, "/reprocess", "POST")} className="rounded-md border border-amber-400/30 px-2 py-1 text-amber-200 hover:bg-amber-400/10 disabled:opacity-50">Reprocess</button>
+                    )}
+
                     <button disabled={busy === d.id} onClick={() => { if (confirm(`Delete “${d.title}”? This permanently removes the file.`)) act(d.id, "", "DELETE") }} className="rounded-md border border-red-400/30 px-2 py-1 text-red-300 hover:bg-red-400/10 disabled:opacity-50">Delete</button>
                   </div>
                 </td>
