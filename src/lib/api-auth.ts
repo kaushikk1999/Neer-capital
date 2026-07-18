@@ -7,8 +7,12 @@ import { prisma } from "@/lib/db"
 // document route must call this; frontend checks are not authoritative.
 export async function requireApiAdmin(): Promise<{ session: Session } | { error: NextResponse }> {
   const session = await auth()
-  if (!session?.user) return { error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) }
-  if (session.user.role !== "ADMIN") return { error: NextResponse.json({ error: "Forbidden" }, { status: 403 }) }
+  if (!session?.user) {
+    return { error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) }
+  }
+  if (session.user.role !== "ADMIN") {
+    return { error: NextResponse.json({ error: "Forbidden: Admins only" }, { status: 403 }) }
+  }
   return { session }
 }
 
