@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { revalidatePath } from "next/cache"
 import { requireApiAdmin } from "@/lib/api-auth"
 import { prisma } from "@/lib/db"
 
@@ -54,5 +55,6 @@ export async function POST(_req: Request, { params }: { params: { id: string } }
   })
 
   console.log(`[Reprocess] Re-queued job ${job.id} for document ${document.id}`)
+  revalidatePath("/admin/documents")
   return NextResponse.json({ ok: true, jobId: job.id })
 }
