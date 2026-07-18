@@ -93,6 +93,10 @@ export default function DocumentsTable({ documents }: { documents: Doc[] }) {
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex justify-end gap-2 text-xs">
+                    <a href={`/api/admin/documents/${d.id}/file`} target="_blank" rel="noopener noreferrer" className="rounded-md border border-white/10 px-2 py-1 text-slate-200 hover:bg-white/5">
+                      PDF
+                    </a>
+
                     {d.analyses[0]?.status === "REVIEW_REQUIRED" && !d.published && (
                        <button onClick={() => router.push(`/admin/documents/${d.slug}/review`)} className="rounded-md border border-blue-400/30 px-2 py-1 text-blue-200 hover:bg-blue-400/10">Review Draft</button>
                     )}

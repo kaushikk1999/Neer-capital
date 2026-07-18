@@ -36,22 +36,33 @@ export default async function ReportPage({ params }: { params: { slug: string } 
       <div className="max-w-6xl mx-auto px-4 py-12 md:py-24">
         
         {/* Header Section */}
-        <header className="mb-16 relative">
+        <header className="mb-16 relative flex flex-col md:flex-row md:items-start justify-between gap-6">
           <div className="absolute inset-0 bg-blue-500/10 blur-[100px] -z-10 rounded-full" />
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-br from-white to-gray-500 mb-6">
-            {doc.title}
-          </h1>
-          <div className="flex flex-wrap gap-4 text-sm text-gray-400 items-center">
-            <span className="flex items-center gap-1.5 bg-white/5 px-3 py-1.5 rounded-full border border-white/10">
-              <FileText className="w-4 h-4" /> AI Generated
-            </span>
-            <span>{new Date(analysis.createdAt).toLocaleDateString()}</span>
-            {analysis.confidence && (
-              <span className="flex items-center gap-1.5 text-blue-400">
-                <Activity className="w-4 h-4" /> {(analysis.confidence * 100).toFixed(0)}% Confidence
+          <div>
+            <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-br from-white to-gray-500 mb-6">
+              {doc.title}
+            </h1>
+            <div className="flex flex-wrap gap-4 text-sm text-gray-400 items-center">
+              <span className="flex items-center gap-1.5 bg-white/5 px-3 py-1.5 rounded-full border border-white/10">
+                <FileText className="w-4 h-4" /> AI Generated
               </span>
-            )}
+              <span>{new Date(analysis.createdAt).toLocaleDateString()}</span>
+              {analysis.confidence && (
+                <span className="flex items-center gap-1.5 text-blue-400">
+                  <Activity className="w-4 h-4" /> {(analysis.confidence * 100).toFixed(0)}% Confidence
+                </span>
+              )}
+            </div>
           </div>
+          <a
+            href={`/api/documents/${doc.slug}/file`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 transition-all shrink-0 text-sm font-medium hover:scale-105 active:scale-95"
+          >
+            <FileText className="w-4 h-4" />
+            View Original PDF
+          </a>
         </header>
 
         {/* Topline Summary */}

@@ -47,6 +47,15 @@ export default async function AdminReviewPage({ params }: { params: { slug: stri
           <span className="text-gray-400 text-sm">{document.title}</span>
         </div>
         <div className="flex items-center gap-4">
+          <a
+            href={`/api/admin/documents/${document.id}/file`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm font-medium transition-colors"
+          >
+            <FileText className="w-4 h-4" />
+            View Original PDF
+          </a>
           <ApproveButton documentId={document.id} analysisId={analysis.id} isAlreadyPublished={document.published && document.publishedAnalysisId === analysis.id} />
         </div>
       </div>
