@@ -6,11 +6,17 @@ import ApproveButton from "@/components/admin/ApproveButton"
 import ReportChart from "@/components/charts/ReportChart"
 import { ExtractionQualityChip, ExtractionQualityPanel } from "@/components/admin/ExtractionQualityChip"
 import { RecommendationCard } from "@/components/admin/RecommendationCard"
+import { ReviewableMetrics } from "@/components/admin/ReviewableMetrics"
 import type { QualityCoverage } from "@/lib/report/types"
 
 /** V2 admin rendering is gated; with the flag off this page is unchanged. */
 function v2AdminReadEnabled(): boolean {
   return process.env.REPORT_V2_ADMIN_READ === "true"
+}
+
+/** Review actions are gated separately from V2 reading. */
+function v2ReviewActionsEnabled(): boolean {
+  return process.env.REPORT_V2_REVIEW_ACTIONS === "true"
 }
 
 async function getDraftReport(slug: string) {
@@ -50,6 +56,7 @@ export default async function AdminReviewPage({ params }: { params: { slug: stri
   const coverage = (analysis.qualityCoverage as unknown as QualityCoverage | null) ?? null
   const valuationDetail = (analysis.valuationDetail ?? null) as Record<string, string | null> | null
   const identity = (analysis.identity ?? null) as Record<string, string | null> | null
+  const reviewActionsEnabled = v2ReviewActionsEnabled()
 
   return (
     <div className="min-h-screen bg-[#050505] text-gray-100 font-sans selection:bg-blue-500/30 pb-24">
@@ -144,19 +151,45 @@ export default async function AdminReviewPage({ params }: { params: { slug: stri
             <h3 className="text-2xl font-semibold mb-8 flex items-center gap-3">
               <TrendingUp className="w-6 h-6 text-blue-400" /> Key Metrics
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {analysis.metrics.map((metric) => (
-                <div key={metric.id} className="p-6 rounded-2xl bg-gradient-to-b from-white/[0.04] to-transparent border border-white/[0.05] hover:border-white/[0.1] transition-colors relative overflow-hidden">
-                  <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-                  <p className="text-sm text-gray-400 mb-2 truncate" title={metric.label}>{metric.label}</p>
-                  <p className="text-2xl font-bold text-white tracking-tight">
-                    {metric.value}
-                    {metric.unit ? ` ${metric.unit}` : ''}
-                  </p>
-                  {metric.period && <p className="text-xs text-gray-500 mt-2 uppercase tracking-wider">{metric.period}</p>}
-                </div>
-              ))}
-            </div>
+            {isV2 ? (
+              <ReviewableMetrics
+                analysisId={analysis.id}
+                documentId={document.id}
+                initialRevision={analysis.revision ?? 0}
+                canReview={reviewActionsEnabled && analysis.status !== "APPROVED" && analysis.status !== "SUPERSEDED"}
+                metrics={analysis.metrics.map((m) => ({
+                  id: m.id,
+                  label: m.label,
+                  value: m.value,
+                  rawValue: m.rawValue ?? null,
+                  unit: m.unit ?? null,
+                  period: m.period ?? null,
+                  classificationCode: m.classificationCode ?? null,
+                  sourcePage: m.sourcePage ?? null,
+                  // Only verified excerpts may be shown as verbatim quotes.
+                  sourceQuote: null,
+                  verification: null,
+                  confidenceLevel: m.confidenceLevel ?? null,
+                  validationStatus: m.validationStatus ?? null,
+                  reviewStatus: m.reviewStatus ?? "NOT_REVIEWED",
+                  provenance: m.provenance ?? null,
+                }))}
+              />
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {analysis.metrics.map((metric) => (
+                  <div key={metric.id} className="p-6 rounded-2xl bg-gradient-to-b from-white/[0.04] to-transparent border border-white/[0.05] hover:border-white/[0.1] transition-colors relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                    <p className="text-sm text-gray-400 mb-2 truncate" title={metric.label}>{metric.label}</p>
+                    <p className="text-2xl font-bold text-white tracking-tight">
+                      {metric.value}
+                      {metric.unit ? ` ${metric.unit}` : ''}
+                    </p>
+                    {metric.period && <p className="text-xs text-gray-500 mt-2 uppercase tracking-wider">{metric.period}</p>}
+                  </div>
+                ))}
+              </div>
+            )}
           </section>
         )}
 
