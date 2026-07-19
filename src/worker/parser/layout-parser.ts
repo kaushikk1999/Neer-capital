@@ -18,8 +18,6 @@ import { createRequire } from "module"
 import { dirname, join } from "path"
 import type { BoundingBox } from "@/lib/report/types"
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 export interface TextItem {
   str: string
   /** Viewport-space box, origin top-left, unit "pt". */

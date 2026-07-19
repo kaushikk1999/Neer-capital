@@ -5,13 +5,15 @@
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
-    "start": "concurrently \"next start\" \"npm run worker\"",
+    "start": "next start",
     "lint": "next lint",
     "db:seed": "prisma db seed",
     "test": "playwright test",
     "test:preview": "playwright test --config=playwright.preview.config.ts",
     "analyze": "ANALYZE=true next build",
-    "worker": "tsx src/worker/index.ts"
+    "worker": "tsx src/worker/index.ts",
+    "start:web": "next start",
+    "start:worker": "npm run worker"
   },
   "prisma": {
     "seed": "node prisma/seed.mjs"
