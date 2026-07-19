@@ -3,8 +3,7 @@ import { prisma } from "@/lib/db"
 import { FileText, ArrowRight } from "lucide-react"
 
 export const metadata = { title: "Research Reports | Neer Capital" }
-
-export const revalidate = 60 // Optional ISR caching
+export const dynamic = "force-dynamic"
 
 export default async function ReportsIndexPage() {
   const publishedDocs = await prisma.document.findMany({
