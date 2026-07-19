@@ -60,6 +60,24 @@ export interface EvidenceLinkRef {
 }
 
 /**
+ * Region of a page an excerpt was taken from.
+ *
+ * Viewport space: origin top-left, PDF points, with page rotation and CropBox
+ * offset already applied, so the box can be overlaid on a rendered page
+ * without further conversion. `page` is 1-indexed to match how people cite.
+ */
+export interface BoundingBox {
+  page: number
+  x0: number
+  y0: number
+  x1: number
+  y1: number
+  unit: "pt"
+  origin: "top-left"
+  rotation: number
+}
+
+/**
  * Every material identity/valuation value carries its own provenance. A bare
  * value is never persisted for these fields — if we cannot say where it came
  * from, we cannot show it as fact.
