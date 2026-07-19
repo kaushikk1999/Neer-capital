@@ -3,6 +3,7 @@ export const navItems: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard/account' },
   { label: 'Product', href: '/#product' },
   { label: 'Solutions', href: '/#solutions' },
+  { label: 'Reports', href: '/reports' },
   { label: 'Pricing', href: '/#pricing' },
   { label: 'About', href: '/about' },
   { label: 'Contact', href: '/contact' }
