@@ -123,6 +123,17 @@ export class DbPersister {
           finishedAt: new Date()
         }
       })
+
+      // 6. Release the document from PROCESSING.
+      // Reprocessing sets the document to PROCESSING while the worker runs. If
+      // we never clear it the document stays "processing" forever even though
+      // the job finished and an analysis exists. Only move it back to DRAFT —
+      // a PUBLISHED or ARCHIVED document must keep its status, since a
+      // reprocess of a live report should not silently unpublish it.
+      await tx.document.updateMany({
+        where: { id: documentId, status: "PROCESSING" },
+        data: { status: "DRAFT" }
+      })
     })
 
     console.log(`[DbPersister] Successfully persisted analysis for document ${documentId}`)

@@ -94,13 +94,23 @@ export class JobManager {
   }
 
   public async markJobFailed(jobId: string, error: string) {
-    await prisma.analysisJob.update({
+    const job = await prisma.analysisJob.update({
       where: { id: jobId },
       data: {
         status: "FAILED",
         error,
         finishedAt: new Date(),
       },
+      select: { documentId: true },
+    })
+
+    // A failed run must also release the document from PROCESSING, otherwise a
+    // reprocess that errors leaves it showing "processing" indefinitely with no
+    // job running. Scoped to PROCESSING so a PUBLISHED or ARCHIVED document is
+    // never downgraded by a failed re-analysis.
+    await prisma.document.updateMany({
+      where: { id: job.documentId, status: "PROCESSING" },
+      data: { status: "DRAFT" },
     })
   }
 }
