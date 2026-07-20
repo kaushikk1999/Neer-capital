@@ -163,7 +163,7 @@ export const en: TranslationDict = {
   // ── About Page ──
   'about.eyebrow': 'About Us',
   'about.heading': 'About Neer',
-  'about.p1': "Neer Capital was founded by Sethu and Preethi, a couple passionate about active stock picking. Preethi's father, Natarajan, an equity investor since the 1980s, navigated the volatile Harshad Mehta days, developing skills to create and retain wealth. Preethi insists Sethu's investing talent stems from her and her father's influence, though Sethu might beg to differ!",
+  'about.p1': "Neer Capital was founded by Sethu and Preethi, a couple passionate about active stock picking.",
   'about.p2': 'As engineers-turned-business managers, Sethu and Preethi bring an analytical lens to simple financial data. Their perspectives, shaped by MBA finance courses rather than financial sector experience, are refreshingly non-professional yet insightful. Neer, meaning "Water" in Tamil, embodies their fluid, adaptable approach.',
   'about.p3': 'Welcome to Neer Capital and happy investing!',
 
