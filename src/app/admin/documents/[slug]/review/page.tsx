@@ -90,20 +90,14 @@ export default async function AdminReviewPage({ params }: { params: { slug: stri
             {document.title}
           </h1>
           <div className="flex flex-wrap gap-4 text-sm text-gray-400 items-center">
-            <span className="flex items-center gap-1.5 bg-white/5 px-3 py-1.5 rounded-full border border-white/10">
-              <FileText className="w-4 h-4" /> AI-extracted from uploaded report
-            </span>
             <span>{new Date(analysis.createdAt).toLocaleDateString()}</span>
-            {isV2 ? (
-              // Measured coverage replaces the old global confidence percentage.
-              <ExtractionQualityChip coverage={coverage} />
-            ) : (
-              analysis.confidence != null && (
-                <span className="flex items-center gap-1.5 text-blue-400">
-                  <Activity className="w-4 h-4" /> {(analysis.confidence * 100).toFixed(0)}% Confidence
-                </span>
-              )
-            )}
+            {/*
+              V2 shows measured extraction coverage. V1 shows nothing: its
+              confidence figure was a synthetic score that reported ~100% on
+              every report regardless of how well extraction actually went, so
+              displaying it was worse than displaying nothing.
+            */}
+            {isV2 && <ExtractionQualityChip coverage={coverage} />}
             {isV2 && analysis.status === "PARTIAL" && (
               <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-2.5 py-1 text-xs font-medium text-amber-300">
                 Partial extraction — publication blocked

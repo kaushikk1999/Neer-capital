@@ -42,16 +42,16 @@ export default async function ReportPage({ params }: { params: { slug: string } 
             <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-br from-white to-gray-500 mb-6">
               {doc.title}
             </h1>
+            {/*
+              The "AI Generated" chip and the confidence percentage were removed
+              deliberately. The percentage came from a synthetic score that
+              started at 1.0 and was reduced slightly for missing evidence, so it
+              read "100% Confidence" on almost every report — a certainty claim
+              about financial data that nothing in the pipeline could support.
+              Per-value provenance is shown alongside each figure instead.
+            */}
             <div className="flex flex-wrap gap-4 text-sm text-gray-400 items-center">
-              <span className="flex items-center gap-1.5 bg-white/5 px-3 py-1.5 rounded-full border border-white/10">
-                <FileText className="w-4 h-4" /> AI Generated
-              </span>
               <span>{new Date(analysis.createdAt).toLocaleDateString()}</span>
-              {analysis.confidence && (
-                <span className="flex items-center gap-1.5 text-blue-400">
-                  <Activity className="w-4 h-4" /> {(analysis.confidence * 100).toFixed(0)}% Confidence
-                </span>
-              )}
             </div>
           </div>
           <a
