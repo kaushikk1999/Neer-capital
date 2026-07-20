@@ -5,13 +5,15 @@
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
-    "start": "concurrently \"next start\" \"npm run worker\"",
+    "start": "next start",
     "lint": "next lint",
     "db:seed": "prisma db seed",
     "test": "playwright test",
     "test:preview": "playwright test --config=playwright.preview.config.ts",
     "analyze": "ANALYZE=true next build",
-    "worker": "tsx src/worker/index.ts"
+    "worker": "tsx src/worker/index.ts",
+    "start:web": "next start",
+    "start:worker": "npm run worker"
   },
   "prisma": {
     "seed": "node prisma/seed.mjs"
@@ -29,6 +31,7 @@
     "next-auth": "^5.0.0-beta.31",
     "ollama": "^0.6.3",
     "pdf-parse": "1.1.1",
+    "pdfjs-dist": "4.10.38",
     "prisma": "^6.19.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

@@ -182,6 +182,7 @@ enum DocumentStatus {
 
 enum AnalysisStatus {
   PROCESSING
+  PARTIAL
   REVIEW_REQUIRED
   APPROVED
   SUPERSEDED
@@ -212,12 +213,20 @@ model Document {
   createdAt           DateTime       @default(now()) @map("created_at")
   updatedAt           DateTime       @updatedAt @map("updated_at")
 
+  // V2: atomic pointer to the currently active immutable publication snapshot.
+  activePublishedSnapshotId String? @unique @map("active_published_snapshot_id")
+
   uploadedBy        User?              @relation(fields: [uploadedById], references: [id])
   files             DocumentFile[]
   versions          DocumentVersion[]
   publishedAnalysis DocumentAnalysis?  @relation("PublishedAnalysis", fields: [publishedAnalysisId], references: [id])
   analyses          DocumentAnalysis[] @relation("DocumentAnalyses")
   jobs              AnalysisJob[]
+
+  // V2 publication snapshots: history (DocumentSnapshots) + active pointer (ActiveSnapshot).
+  activeSnapshot PublicationSnapshot?  @relation("ActiveSnapshot", fields: [activePublishedSnapshotId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  snapshots      PublicationSnapshot[] @relation("DocumentSnapshots")
+  extractionRuns ExtractionRun[]
 
   @@index([uploadedById])
   @@index([status, published])
@@ -270,13 +279,46 @@ model DocumentAnalysis {
   createdAt      DateTime       @default(now()) @map("created_at")
   updatedAt      DateTime       @updatedAt @map("updated_at")
 
+  // ---- V2 (additive; legacy rows keep defaults / null) ----
+  schemaVersion         Int     @default(1) @map("schema_version")
+  version               Int     @default(1)
+  revision              Int     @default(0)
+  supersedesAnalysisId  String? @map("supersedes_analysis_id")
+  identity              Json?
+  valuationDetail       Json?   @map("valuation_detail")
+  investmentSummary     Json?   @map("investment_summary")
+  attribution           Json?
+  qualityCoverage       Json?   @map("quality_coverage")
+  qualityFormulaVersion String? @map("quality_formula_version")
+
   document             Document          @relation("DocumentAnalyses", fields: [documentId], references: [id], onDelete: Cascade)
   publishedForDocument Document?         @relation("PublishedAnalysis")
   sections             DocumentSection[]
   metrics              DocumentMetric[]
   charts               DocumentChart[]
 
+  // Supersession self-relation (both sides).
+  supersedes   DocumentAnalysis?  @relation("AnalysisSupersession", fields: [supersedesAnalysisId], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  supersededBy DocumentAnalysis[] @relation("AnalysisSupersession")
+
+  evidence          AnalysisEvidence[]
+  evidenceLinks     EntityEvidenceLink[]
+  issues            AnalysisIssue[]
+  thesisDrivers     ThesisDriver[]
+  counterClaims     CounterThesisClaim[]
+  breakConditions   ThesisBreakCondition[]
+  catalysts         Catalyst[]
+  riskItems         RiskItem[]
+  scenarios         Scenario[]
+  synthesizedClaims SynthesizedClaim[]
+  auditLogs         AnalysisAuditLog[]
+  snapshots         PublicationSnapshot[]
+  extractionRuns    ExtractionRun[]
+
+  @@unique([documentId, version])
   @@index([documentId])
+  @@index([documentId, status])
+  @@index([supersedesAnalysisId])
   @@map("document_analyses")
 }
 
@@ -289,9 +331,14 @@ model DocumentSection {
   order         Int      @default(0)
   createdAt     DateTime @default(now()) @map("created_at")
 
+  // ---- V2 (additive) ----
+  sourcePage   Int?         @map("source_page")
+  reviewStatus ReviewStatus @default(NOT_REVIEWED) @map("review_status")
+
   analysis DocumentAnalysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
 
   @@index([analysisId])
+  @@index([analysisId, order])
   @@map("document_sections")
 }
 
@@ -300,6 +347,7 @@ model DocumentMetric {
   analysisId   String   @map("analysis_id")
   label        String
   value        String
+  // Legacy float retained for V1 readers only — never used for financial math.
   numericValue Float?   @map("numeric_value")
   unit         String?
   period       String?
@@ -307,9 +355,24 @@ model DocumentMetric {
   order        Int      @default(0)
   createdAt    DateTime @default(now()) @map("created_at")
 
+  // ---- V2 (additive) ----
+  rawValue           String?             @map("raw_value")
+  decimalValue       Decimal?            @map("decimal_value") @db.Decimal(20, 4)
+  scale              String?
+  currency           String?
+  taxonomyKey        String?             @map("taxonomy_key")
+  classificationCode ClassificationCode? @map("classification_code")
+  sourcePage         Int?                @map("source_page")
+  confidenceLevel    ConfidenceLevel?    @map("confidence_level")
+  validationStatus   ValidationStatus?   @map("validation_status")
+  reviewStatus       ReviewStatus        @default(NOT_REVIEWED) @map("review_status")
+  provenance         ProvenanceType?
+
   analysis DocumentAnalysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
 
   @@index([analysisId])
+  @@index([analysisId, order])
+  @@index([analysisId, reviewStatus])
   @@map("document_metrics")
 }
 
@@ -318,13 +381,19 @@ model DocumentChart {
   analysisId String   @map("analysis_id")
   type       String
   title      String
+  // V1 shape {labels, series:[{name,data}]} — never reshaped, always written.
   config     Json
   order      Int      @default(0)
   createdAt  DateTime @default(now()) @map("created_at")
 
+  // ---- V2 (additive): normalized points with per-point status/provenance ----
+  configV2      Json? @map("config_v2")
+  schemaVersion Int   @default(1) @map("schema_version")
+
   analysis DocumentAnalysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
 
   @@index([analysisId])
+  @@index([analysisId, order])
   @@map("document_charts")
 }
 
@@ -341,9 +410,566 @@ model AnalysisJob {
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
+  // ---- V2 (additive): client-supplied idempotency key for retries ----
+  idempotencyKey String? @map("idempotency_key")
+
   document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
 
+  @@unique([documentId, idempotencyKey])
   @@index([documentId, status])
   @@index([status])
   @@map("analysis_jobs")
+}
+
+// -----------------------------------------------------------------------------
+// Report Analysis V2 — provenance, validation, review, immutable publication.
+// All additive: legacy rows keep defaults/null and remain readable by V1 code.
+// -----------------------------------------------------------------------------
+
+enum ReviewStatus {
+  NOT_REVIEWED
+  IN_REVIEW
+  APPROVED
+  NEEDS_REVIEW
+  ERROR
+  MISSING
+  REJECTED
+}
+
+enum ConfidenceLevel {
+  HIGH
+  MEDIUM
+  LOW
+  CONFLICTING
+  MISSING
+  UNVERIFIED
+}
+
+/// A=Actual R=Restated P=Preliminary G=Guidance E=Estimate C=Consensus
+/// S=Scenario AI=Platform-derived U=Unclear
+enum ClassificationCode {
+  A
+  R
+  P
+  G
+  E
+  C
+  S
+  AI
+  U
+}
+
+enum ValidationStatus {
+  VERIFIED
+  NEEDS_REVIEW
+  CONFLICTING
+  UNVERIFIED
+}
+
+enum IssueSeverity {
+  BLOCKER
+  WARNING
+  INFO
+}
+
+enum IssueStatus {
+  OPEN
+  ACKNOWLEDGED
+  RESOLVED
+}
+
+enum ProvenanceType {
+  ANALYST_STATED
+  PLATFORM_CALCULATED
+  AI_INFERRED
+  SYSTEM_GENERATED
+}
+
+enum AuditAction {
+  EXTRACT
+  REEXTRACT
+  EDIT
+  APPROVE
+  REJECT
+  MARK_MISSING
+  NOTE
+  ACK_WARNING
+  PUBLISH
+  UNPUBLISH
+  FLAG_CHANGE
+}
+
+enum EvidenceVerify {
+  EXACT_MATCH
+  NORMALIZED_MATCH
+  APPROXIMATE_MATCH
+  UNVERIFIED
+  CONFLICTING
+}
+
+enum EvidenceSourceType {
+  NARRATIVE_QUOTE
+  TABLE_CELL
+  CHART_LABEL
+  HEADER
+  CALCULATED
+}
+
+enum EvidenceRole {
+  PRIMARY
+  SUPPORTING
+  CONTRADICTING
+}
+
+enum ExtractionMethod {
+  TEXT_LAYER
+  TABLE_RECONSTRUCTED
+  OCR
+  CHART_DERIVED
+}
+
+enum VerificationMethod {
+  DETERMINISTIC_NUMERIC
+  STRING_MATCH
+  MODEL_SEMANTIC
+  NONE
+}
+
+enum ExtractionRunStatus {
+  QUEUED
+  PARSING
+  EXTRACTING
+  NORMALIZING
+  SYNTHESIZING
+  PERSISTING
+  COMPLETED
+  PARTIAL
+  FAILED
+  CANCELLED
+  TIMED_OUT
+}
+
+enum ChunkStatus {
+  PENDING
+  CLAIMED
+  EXTRACTING
+  VALIDATING
+  RETRY_WAIT
+  DONE
+  FAILED
+}
+
+enum IdempotencyStatus {
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+  EXPIRED
+}
+
+enum ScenarioKind {
+  BULL
+  BASE
+  BEAR
+}
+
+/// Verbatim source support for a claim. Unmatched quotes are preserved and
+/// marked UNVERIFIED — never deleted, never rendered as exact verbatim.
+model AnalysisEvidence {
+  id                 String             @id @default(cuid())
+  analysisId         String             @map("analysis_id")
+  page               Int?
+  sourceType         EvidenceSourceType @map("source_type")
+  originalQuote      String?            @map("original_quote") @db.Text
+  normalizedQuote    String?            @map("normalized_quote") @db.Text
+  cellRef            Json?              @map("cell_ref")
+  /// {page,x0,y0,x1,y1,unit:"pt",origin:"top-left",rotation,cropOffset}
+  boundingBox        Json?              @map("bounding_box")
+  /// R2 key for a rendered chart crop, when this evidence came from an image.
+  cropKey            String?            @map("crop_key")
+  extractionMethod   ExtractionMethod   @map("extraction_method")
+  verificationStatus EvidenceVerify     @default(UNVERIFIED) @map("verification_status")
+  verificationMethod VerificationMethod @default(NONE) @map("verification_method")
+  confidenceLevel    ConfidenceLevel?   @map("confidence_level")
+  createdAt          DateTime           @default(now()) @map("created_at")
+  updatedAt          DateTime           @updatedAt @map("updated_at")
+
+  analysis DocumentAnalysis     @relation(fields: [analysisId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  links    EntityEvidenceLink[]
+
+  @@index([analysisId])
+  @@index([analysisId, page])
+  @@map("analysis_evidence")
+}
+
+/// Many-to-many evidence attachment: an entity may have multiple primary,
+/// supporting and contradicting evidence records.
+model EntityEvidenceLink {
+  id         String       @id @default(cuid())
+  analysisId String       @map("analysis_id")
+  entityType String       @map("entity_type")
+  entityId   String       @map("entity_id")
+  evidenceId String       @map("evidence_id")
+  role       EvidenceRole
+  note       String?      @db.Text
+  createdAt  DateTime     @default(now()) @map("created_at")
+
+  analysis DocumentAnalysis @relation(fields: [analysisId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  evidence AnalysisEvidence @relation(fields: [evidenceId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([analysisId, entityType, entityId, evidenceId, role])
+  @@index([entityType, entityId])
+  @@index([evidenceId])
+  @@map("entity_evidence_links")
+}
+
+model AnalysisIssue {
+  id          String        @id @default(cuid())
+  analysisId  String        @map("analysis_id")
+  revision    Int
+  severity    IssueSeverity
+  status      IssueStatus   @default(OPEN)
+  code        String
+  /// hash(code + entityType + entityId + normalized value snapshot)
+  fingerprint String
+  entityType  String        @map("entity_type")
+  entityId    String?       @map("entity_id")
+  message     String        @db.Text
+  details     Json
+  createdAt   DateTime      @default(now()) @map("created_at")
+  resolvedAt  DateTime?     @map("resolved_at")
+  resolvedBy  String?       @map("resolved_by")
+
+  analysis         DocumentAnalysis       @relation(fields: [analysisId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  acknowledgements IssueAcknowledgement[]
+
+  @@unique([analysisId, revision, fingerprint])
+  @@index([analysisId, status])
+  @@index([fingerprint])
+  @@map("analysis_issues")
+}
+
+/// An acknowledgement is invalidated only when its issue fingerprint changes.
+model IssueAcknowledgement {
+  id          String   @id @default(cuid())
+  issueId     String   @map("issue_id")
+  fingerprint String
+  reviewerId  String   @map("reviewer_id")
+  reason      String   @db.Text
+  revision    Int
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  issue AnalysisIssue @relation(fields: [issueId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([issueId])
+  @@map("issue_acknowledgements")
+}
+
+/// Lease-based idempotency: duplicates replay the stored response; a crashed
+/// holder is taken over after leaseExpiresAt; records expire and are swept.
+model IdempotencyRecord {
+  id             String            @id @default(cuid())
+  scope          String
+  key            String
+  requestHash    String            @map("request_hash")
+  status         IdempotencyStatus @default(IN_PROGRESS)
+  owner          String?
+  leaseExpiresAt DateTime?         @map("lease_expires_at")
+  expiresAt      DateTime          @map("expires_at")
+  attemptCount   Int               @default(0) @map("attempt_count")
+  response       Json?
+  statusCode     Int?              @map("status_code")
+  createdAt      DateTime          @default(now()) @map("created_at")
+  updatedAt      DateTime          @updatedAt @map("updated_at")
+
+  @@unique([scope, key])
+  @@index([status, leaseExpiresAt])
+  @@index([expiresAt])
+  @@map("idempotency_records")
+}
+
+/// Database-backed kill switches. Env vars remain safe defaults; critical
+/// flags are read uncached at operation commit time.
+model RuntimeFlag {
+  key         String   @id
+  enabled     Boolean  @default(false)
+  updatedById String?  @map("updated_by_id")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("runtime_flags")
+}
+
+model ThesisDriver {
+  id               String           @id @default(cuid())
+  analysisId       String           @map("analysis_id")
+  order            Int              @default(0)
+  title            String
+  explanation      String           @db.Text
+  metricKey        String?          @map("metric_key")
+  direction        String?
+  forecastPeriod   String?          @map("forecast_period")
+  quantifiedImpact String?          @map("quantified_impact")
+  provenance       ProvenanceType
+  confidenceLevel  ConfidenceLevel? @map("confidence_level")
+  reviewStatus     ReviewStatus     @default(NOT_REVIEWED) @map("review_status")
+  createdAt        DateTime         @default(now()) @map("created_at")
+
+  analysis DocumentAnalysis @relation(fields: [analysisId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([analysisId, order])
+  @@index([analysisId, reviewStatus])
+  @@map("thesis_drivers")
+}
+
+model CounterThesisClaim {
+  id                   String           @id @default(cuid())
+  analysisId           String           @map("analysis_id")
+  order                Int              @default(0)
+  claim                String           @db.Text
+  vulnerableAssumption String?          @map("vulnerable_assumption") @db.Text
+  provenance           ProvenanceType
+  confidenceLevel      ConfidenceLevel? @map("confidence_level")
+  reviewStatus         ReviewStatus     @default(NOT_REVIEWED) @map("review_status")
+  createdAt            DateTime         @default(now()) @map("created_at")
+
+  analysis DocumentAnalysis @relation(fields: [analysisId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([analysisId, order])
+  @@map("counter_thesis_claims")
+}
+
+model ThesisBreakCondition {
+  id                String           @id @default(cuid())
+  analysisId        String           @map("analysis_id")
+  order             Int              @default(0)
+  condition         String           @db.Text
+  threshold         String?
+  period            String?
+  affectedDriverId  String?          @map("affected_driver_id")
+  affectedMetricKey String?          @map("affected_metric_key")
+  consequence       String?          @db.Text
+  provenance        ProvenanceType
+  confidenceLevel   ConfidenceLevel? @map("confidence_level")
+  reviewStatus      ReviewStatus     @default(NOT_REVIEWED) @map("review_status")
+  createdAt         DateTime         @default(now()) @map("created_at")
+
+  analysis DocumentAnalysis @relation(fields: [analysisId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([analysisId, order])
+  @@map("thesis_break_conditions")
+}
+
+model Catalyst {
+  id                 String           @id @default(cuid())
+  analysisId         String           @map("analysis_id")
+  order              Int              @default(0)
+  name               String
+  expectedPeriod     String?          @map("expected_period")
+  direction          String?
+  probability        String?
+  importance         String?
+  affectedMetricKeys Json?            @map("affected_metric_keys")
+  explanation        String?          @db.Text
+  provenance         ProvenanceType
+  confidenceLevel    ConfidenceLevel? @map("confidence_level")
+  reviewStatus       ReviewStatus     @default(NOT_REVIEWED) @map("review_status")
+  createdAt          DateTime         @default(now()) @map("created_at")
+
+  analysis DocumentAnalysis @relation(fields: [analysisId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([analysisId, order])
+  @@map("catalysts")
+}
+
+model RiskItem {
+  id                 String           @id @default(cuid())
+  analysisId         String           @map("analysis_id")
+  order              Int              @default(0)
+  name               String
+  category           String?
+  explanation        String           @db.Text
+  probability        String?
+  severity           String?
+  horizon            String?
+  controllability    String?
+  affectedMetricKeys Json?            @map("affected_metric_keys")
+  valuationImpact    String?          @map("valuation_impact")
+  triggerThreshold   String?          @map("trigger_threshold")
+  mitigation         String?          @db.Text
+  causalChain        Json?            @map("causal_chain")
+  provenance         ProvenanceType
+  confidenceLevel    ConfidenceLevel? @map("confidence_level")
+  reviewStatus       ReviewStatus     @default(NOT_REVIEWED) @map("review_status")
+  createdAt          DateTime         @default(now()) @map("created_at")
+
+  analysis DocumentAnalysis @relation(fields: [analysisId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([analysisId, order])
+  @@map("risk_items")
+}
+
+model Scenario {
+  id             String         @id @default(cuid())
+  analysisId     String         @map("analysis_id")
+  kind           ScenarioKind
+  source         ProvenanceType
+  assumptions    Json
+  targetPrice    String?        @map("target_price")
+  upsideDownside String?        @map("upside_downside")
+  reviewStatus   ReviewStatus   @default(NOT_REVIEWED) @map("review_status")
+  createdAt      DateTime       @default(now()) @map("created_at")
+
+  analysis DocumentAnalysis @relation(fields: [analysisId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([analysisId])
+  @@map("scenarios")
+}
+
+/// Narrative generated by the model. Numerical claims must pass deterministic
+/// verification against cited metrics; semantic checks are recorded separately
+/// and are never described as deterministic.
+model SynthesizedClaim {
+  id                   String             @id @default(cuid())
+  analysisId           String             @map("analysis_id")
+  claimType            String             @map("claim_type")
+  text                 String             @db.Text
+  supportingMetricIds  Json               @map("supporting_metric_ids")
+  derivation           Json
+  numericVerification  Json?              @map("numeric_verification")
+  semanticVerification Json?              @map("semantic_verification")
+  verificationMethod   VerificationMethod @default(NONE) @map("verification_method")
+  confidenceLevel      ConfidenceLevel?   @map("confidence_level")
+  reviewStatus         ReviewStatus       @default(NOT_REVIEWED) @map("review_status")
+  createdAt            DateTime           @default(now()) @map("created_at")
+
+  analysis DocumentAnalysis @relation(fields: [analysisId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([analysisId, claimType])
+  @@map("synthesized_claims")
+}
+
+model AnalysisAuditLog {
+  id               String      @id @default(cuid())
+  analysisId       String      @map("analysis_id")
+  entityType       String      @map("entity_type")
+  entityId         String      @map("entity_id")
+  fieldPath        String      @map("field_path")
+  oldValue         Json?       @map("old_value")
+  newValue         Json?       @map("new_value")
+  action           AuditAction
+  reviewerId       String?     @map("reviewer_id")
+  reason           String?     @db.Text
+  analysisRevision Int         @map("analysis_revision")
+  requestId        String?     @map("request_id")
+  createdAt        DateTime    @default(now()) @map("created_at")
+
+  analysis DocumentAnalysis @relation(fields: [analysisId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([analysisId])
+  @@index([entityType, entityId])
+  @@index([reviewerId])
+  @@map("analysis_audit_logs")
+}
+
+/// Immutable published payload. renderedPayload embeds the reviewed evidence
+/// needed for public rendering, so analysis cleanup can never break a live page.
+model PublicationSnapshot {
+  id                        String    @id @default(cuid())
+  documentId                String    @map("document_id")
+  publicationVersion        Int       @map("publication_version")
+  analysisId                String?   @map("analysis_id")
+  analysisRevision          Int       @map("analysis_revision")
+  /// Deterministic `${analysisId}:${analysisRevision}` — survives analysisId
+  /// being nulled, so a revision can never be published twice.
+  sourceAnalysisRevisionKey String    @unique @map("source_analysis_revision_key")
+  renderedPayload           Json      @map("rendered_payload")
+  attribution               Json
+  limitationNotice          Json?     @map("limitation_notice")
+  requestId                 String    @unique @map("request_id")
+  supersededAt              DateTime? @map("superseded_at")
+  approvedById              String?   @map("approved_by_id")
+  approvedAt                DateTime  @default(now()) @map("approved_at")
+
+  document          Document          @relation("DocumentSnapshots", fields: [documentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  activeForDocument Document?         @relation("ActiveSnapshot")
+  analysis          DocumentAnalysis? @relation(fields: [analysisId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@unique([documentId, publicationVersion])
+  @@index([documentId])
+  @@index([analysisId])
+  @@map("publication_snapshots")
+}
+
+model ExtractionRun {
+  id               String              @id @default(cuid())
+  documentId       String              @map("document_id")
+  analysisId       String?             @map("analysis_id")
+  runId            String              @unique @map("run_id")
+  status           ExtractionRunStatus @default(QUEUED)
+  stage            String?
+  heartbeatAt      DateTime?           @map("heartbeat_at")
+  model            String?
+  promptVersion    String?             @map("prompt_version")
+  schemaVersion    Int                 @default(2) @map("schema_version")
+  inputDocHash     String              @map("input_doc_hash")
+  retryCount       Int                 @default(0) @map("retry_count")
+  sanitizedError   String?             @map("sanitized_error") @db.Text
+  usage            Json?
+  validationResult Json?               @map("validation_result")
+  startedAt        DateTime            @default(now()) @map("started_at")
+  finishedAt       DateTime?           @map("finished_at")
+
+  document Document          @relation(fields: [documentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  analysis DocumentAnalysis? @relation(fields: [analysisId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  chunks   ExtractionChunk[]
+
+  @@index([documentId, status])
+  @@index([analysisId])
+  @@map("extraction_runs")
+}
+
+/// Leased, resumable page ranges. Successful chunks are reused on retry when
+/// inputHash matches; expired leases may be taken over.
+model ExtractionChunk {
+  id               String      @id @default(cuid())
+  runId            String      @map("run_id")
+  index            Int
+  pageStart        Int         @map("page_start")
+  pageEnd          Int         @map("page_end")
+  status           ChunkStatus @default(PENDING)
+  inputHash        String      @map("input_hash")
+  extractedPayload Json?       @map("extracted_payload")
+  validationResult Json?       @map("validation_result")
+  attemptCount     Int         @default(0) @map("attempt_count")
+  leaseOwner       String?     @map("lease_owner")
+  leaseExpiresAt   DateTime?   @map("lease_expires_at")
+  model            String?
+  promptVersion    String?     @map("prompt_version")
+  tokensIn         Int?        @map("tokens_in")
+  tokensOut        Int?        @map("tokens_out")
+  startedAt        DateTime?   @map("started_at")
+  finishedAt       DateTime?   @map("finished_at")
+  error            String?     @db.Text
+
+  run ExtractionRun @relation(fields: [runId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([runId, index])
+  @@index([runId, status])
+  @@index([leaseExpiresAt])
+  @@map("extraction_chunks")
+}
+
+/// One row per worker instance/deployment; readiness aggregates freshness.
+model WorkerInstance {
+  id                 String   @id @default(cuid())
+  instanceId         String   @unique @map("instance_id")
+  deploymentId       String?  @map("deployment_id")
+  workerVersion      String   @map("worker_version")
+  lastHeartbeatAt    DateTime @map("last_heartbeat_at")
+  queueConnected     Boolean  @default(false) @map("queue_connected")
+  lastCompletedJobId String?  @map("last_completed_job_id")
+  stalled            Boolean  @default(false)
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  @@index([lastHeartbeatAt])
+  @@map("worker_instances")
 }
