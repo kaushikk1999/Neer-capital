@@ -24,14 +24,16 @@ export function HeroDemo({ query, answer, citations, metrics }: HeroDemoProps) {
           <div className="text-xs uppercase tracking-[0.24em] text-emerald-300">{t('heroDemo.answerLabel')}</div>
           <p className="mt-2 text-sm leading-6 text-slate-200">{answer}</p>
         </div>
-        <div className="mt-4 grid grid-cols-2 gap-3">
-          {metrics.map((metric) => (
-            <div key={metric.label} className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
-              <div className="text-lg font-semibold text-white">{metric.value}</div>
-              <div className="text-xs text-slate-400">{metric.label}</div>
-            </div>
-          ))}
-        </div>
+        {metrics.length > 0 && (
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            {metrics.map((metric) => (
+              <div key={metric.label} className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
+                <div className="text-lg font-semibold text-white">{metric.value}</div>
+                <div className="text-xs text-slate-400">{metric.label}</div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   ); 

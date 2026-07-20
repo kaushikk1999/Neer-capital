@@ -27,10 +27,10 @@ export function Hero() {
               { label: t('heroDemo.citation2.label'), source: t('heroDemo.citation2.source') }, 
               { label: t('heroDemo.citation3.label'), source: t('heroDemo.citation3.source') }
             ]} 
-            metrics={[
-              { label: t('heroDemo.confidence'), value: '92%' }, 
-              { label: t('heroDemo.sources'), value: '14' }
-            ]} 
+            // No confidence or source-count figures: they were illustrative
+            // constants, and a percentage presented as model confidence reads as
+            // a real measurement of answer reliability.
+            metrics={[]}
           />
         </div>
       </div>
