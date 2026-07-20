@@ -412,6 +412,22 @@ CREATE INDEX `document_analyses_document_id_status_idx` ON `document_analyses`(`
 -- CreateIndex
 CREATE INDEX `document_analyses_supersedes_analysis_id_idx` ON `document_analyses`(`supersedes_analysis_id`);
 
+-- Backfill: existing analyses all default to version 1, so a document that was
+-- reprocessed has several rows sharing (document_id, 1). Number them by age
+-- before adding the unique index, or this migration fails on any database that
+-- already contains reprocessed documents (error 1062).
+SET @rn := 0;
+SET @prev := NULL;
+UPDATE `document_analyses` da
+JOIN (
+  SELECT `id`,
+         @rn := IF(@prev = `document_id`, @rn + 1, 1) AS new_version,
+         @prev := `document_id` AS grp
+  FROM `document_analyses`
+  ORDER BY `document_id`, `created_at`, `id`
+) ranked ON ranked.`id` = da.`id`
+SET da.`version` = ranked.new_version;
+
 -- CreateIndex
 CREATE UNIQUE INDEX `document_analyses_document_id_version_key` ON `document_analyses`(`document_id`, `version`);
 
