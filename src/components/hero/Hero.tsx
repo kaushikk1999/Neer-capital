@@ -17,19 +17,6 @@ export function Hero() {
           <div className="mt-8 flex flex-wrap gap-3">
             <Button href="/contact" icon={<ArrowUpRight className="h-4 w-4" />}>{t('hero.cta')}</Button>
           </div>
-          <div className="mt-8 grid max-w-xl grid-cols-2 gap-3 sm:grid-cols-4">
-            {[
-              { value: '180+', labelKey: 'hero.stat.sources' }, 
-              { value: '99.98%', labelKey: 'hero.stat.uptime' }, 
-              { value: '24/7', labelKey: 'hero.stat.coverage' }, 
-              { value: 'SOC 2', labelKey: 'hero.stat.soc' }
-            ].map((item) => (
-              <div key={item.labelKey} className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                <div className="text-xl font-semibold text-white">{item.value}</div>
-                <div className="mt-1 text-xs text-slate-400">{t(item.labelKey)}</div>
-              </div>
-            ))}
-          </div>
         </div>
         <div className="lg:pt-8">
           <HeroDemo 

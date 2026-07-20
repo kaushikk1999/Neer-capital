@@ -16,19 +16,6 @@ export function TrustStrip() {
               ))}
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {[
-              { value: '180+', labelKey: 'trust.stat.sources' }, 
-              { value: '99.98%', labelKey: 'trust.stat.uptime' }, 
-              { value: '24/7', labelKey: 'trust.stat.coverage' }, 
-              { value: 'SOC 2', labelKey: 'trust.stat.soc' }
-            ].map((stat) => (
-              <div key={stat.labelKey} className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                <div className="text-xl font-semibold text-white">{stat.value}</div>
-                <div className="mt-1 text-xs text-slate-400">{t(stat.labelKey)}</div>
-              </div>
-            ))}
-          </div>
         </div>
       </div>
     </section>
