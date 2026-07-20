@@ -9,13 +9,13 @@ export function AuthButton() {
   const { t } = useLanguage();
   if (status === 'authenticated') {
     return (
-      <Button variant="secondary" size="sm" onClick={() => signOut({ callbackUrl: '/login' })}>
+      <Button variant="secondary" size="sm" className="whitespace-nowrap" onClick={() => signOut({ callbackUrl: '/login' })}>
         {t('auth.signOut')}
       </Button>
     );
   }
   return (
-    <Button href="/login" variant="secondary" size="sm">
+    <Button href="/login" variant="secondary" size="sm" className="whitespace-nowrap">
       {t('auth.signIn')}
     </Button>
   );

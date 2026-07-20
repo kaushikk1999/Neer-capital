@@ -22,33 +22,53 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/5 bg-[#050816]/80 backdrop-blur-xl">
-      <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-        <Link href="/" aria-label="Home" className="flex items-center">
+      {/*
+        The desktop bar carries seven nav links, three language buttons and two
+        calls to action. That does not fit at the md breakpoint, where the links
+        collided with the language switcher and both buttons wrapped onto two
+        lines, so the full bar now appears only from lg upwards and the menu
+        button covers everything below it. gap-8 guarantees clear space between
+        the nav and the actions even when justify-between has nothing spare.
+      */}
+      <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-8 px-4 py-4 sm:px-6 lg:px-8">
+        <Link href="/" aria-label="Home" className="flex shrink-0 items-center">
           <Logo className="h-6 sm:h-8 w-auto text-white" />
         </Link>
-        <nav className="hidden items-center gap-6 md:flex">
+        <nav className="hidden items-center gap-6 lg:flex">
           {navItems.map((item) => (
-            <Link key={item.label} href={item.href} className="text-sm text-slate-300 transition hover:text-white">
+            <Link
+              key={item.label}
+              href={item.href}
+              className="whitespace-nowrap text-sm text-slate-300 transition hover:text-white"
+            >
               {t(getNavKey(item.label))}
             </Link>
           ))}
         </nav>
-        <div className="hidden items-center gap-3 md:flex">
-          <LanguageSwitcher className="mr-2" />
+        <div className="hidden shrink-0 items-center gap-4 lg:flex">
+          <LanguageSwitcher />
           <AdminBadge />
           <AuthButton />
-          <Button href="/contact" variant="primary" size="sm" icon={<ArrowUpRight className="h-4 w-4" />}>
+          <Button
+            href="/contact"
+            variant="primary"
+            size="sm"
+            className="whitespace-nowrap"
+            icon={<ArrowUpRight className="h-4 w-4" />}
+          >
             {t('nav.requestDemo')}
           </Button>
         </div>
-        <div className="flex items-center gap-3 md:hidden">
+        <div className="flex shrink-0 items-center gap-3 lg:hidden">
           <LanguageSwitcher />
           <button className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white" onClick={() => setOpen((v) => !v)} aria-label="Open menu">
             <Menu className="h-5 w-5" />
           </button>
         </div>
       </div>
-      <div className={cn('md:hidden', open ? 'block' : 'hidden')}>
+      {/* Must match the lg breakpoint above, or 768-1024px would show neither
+          the desktop bar nor this panel and leave no navigation at all. */}
+      <div className={cn('lg:hidden', open ? 'block' : 'hidden')}>
         <div className="mx-4 mb-4 rounded-3xl border border-white/10 bg-[#0A1020] p-4 shadow-premium">
           <div className="flex flex-col gap-2">
             {navItems.map((item) => (
