@@ -7,7 +7,7 @@ export const ta: TranslationDict = {
   'lang.ta': 'தமிழ்',
 
   // ── Nav ──
-  'nav.dashboard': 'டாஷ்போர்டு',
+  'nav.dashboard': 'எனது போர்ட்ஃபோலியோ',
   'nav.product': 'தயாரிப்பு',
   'nav.solutions': 'தீர்வுகள்',
   'nav.pricing': 'விலை நிர்ணயம்',
