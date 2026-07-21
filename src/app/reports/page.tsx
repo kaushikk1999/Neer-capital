@@ -49,7 +49,7 @@ export default async function ReportsIndexPage() {
                 <div className="flex items-center gap-2 text-xs text-blue-400 font-medium mb-4">
                   <span className="flex items-center gap-1.5 bg-blue-500/10 px-2 py-1 rounded-full border border-blue-500/20">
                     <FileText className="w-3 h-3" />
-                    AI Report
+                    Report
                   </span>
                   <span className="text-gray-500">{new Date(doc.updatedAt).toLocaleDateString()}</span>
                 </div>
