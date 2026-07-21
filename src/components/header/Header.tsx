@@ -77,6 +77,26 @@ export function Header() {
               </Link>
             ))}
           </div>
+          {/*
+            Sign in and Request demo live in the desktop-only action bar, so
+            below lg this panel was the whole header — and it carried neither.
+            A phone visitor had no way to sign in and never saw the primary
+            call to action. Both belong here, separated from the links.
+          */}
+          <div className="mt-4 flex flex-col gap-2 border-t border-white/10 pt-4">
+            <div onClick={() => setOpen(false)}>
+              <AuthButton />
+            </div>
+            <Button
+              href="/contact"
+              variant="primary"
+              size="sm"
+              fullWidth
+              icon={<ArrowUpRight className="h-4 w-4" />}
+            >
+              {t('nav.requestDemo')}
+            </Button>
+          </div>
         </div>
       </div>
     </header>
