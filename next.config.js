@@ -15,6 +15,23 @@ const nextConfig = {
   async headers() {
     return [{ source: '/:path*', headers: securityHeaders }];
   },
+  // Railway serves every custom domain directly, so the apex answered as a
+  // second live copy of the site rather than deferring to www. That splits
+  // search ranking across two hosts, and a session cookie set on one is not
+  // sent to the other, so signing in on the apex looked like being signed out
+  // on www. Only the bare apex is redirected: the Railway hostname stays
+  // reachable as it is, and rewriting it would break admin access if the
+  // custom domain ever fails.
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'neercapital.com' }],
+        destination: 'https://www.neercapital.com/:path*',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 // Optional bundle analysis: `ANALYZE=true npm run build` (dev-only tooling).
