@@ -4,6 +4,7 @@ import { useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { UploadCloud, FileText, CheckCircle2, AlertCircle, X, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/Button"
+import { useLanguage } from "@/lib/i18n/LanguageContext"
 
 const MAX = 25 * 1024 * 1024
 
@@ -24,6 +25,7 @@ type Item = {
 let nextId = 0
 
 export default function UploadForm() {
+  const { t } = useLanguage()
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
   const [items, setItems] = useState<Item[]>([])
@@ -39,8 +41,8 @@ export default function UploadForm() {
     const accepted: Item[] = []
     const bad: string[] = []
     for (const file of Array.from(files)) {
-      if (file.type !== "application/pdf") { bad.push(`${file.name} — not a PDF`); continue }
-      if (file.size > MAX) { bad.push(`${file.name} — over the 25MB limit`); continue }
+      if (file.type !== "application/pdf") { bad.push(`${file.name} — ${t("upload.notPdf")}`); continue }
+      if (file.size > MAX) { bad.push(`${file.name} — ${t("upload.tooLarge")}`); continue }
       accepted.push({
         id: nextId++,
         file,
@@ -69,14 +71,14 @@ export default function UploadForm() {
         if (xhr.status >= 200 && xhr.status < 300) {
           patch(item.id, { state: "queued", progress: 100 })
         } else {
-          let message = "Upload failed."
+          let message = t("upload.failed")
           try { message = JSON.parse(xhr.responseText).error || message } catch { /* keep the default */ }
           patch(item.id, { state: "failed", error: message })
         }
         resolve()
       }
       xhr.onerror = () => {
-        patch(item.id, { state: "failed", error: "Network error during upload." })
+        patch(item.id, { state: "failed", error: t("upload.networkError") })
         resolve()
       }
       xhr.send(data)
@@ -111,8 +113,8 @@ export default function UploadForm() {
         className={`flex cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed p-10 text-center transition ${dragging ? "border-blue-400/60 bg-blue-400/[0.06]" : "border-white/15 bg-white/[0.03] hover:bg-white/[0.05]"}`}
       >
         <UploadCloud className="h-8 w-8 text-blue-300" />
-        <p className="mt-4 text-sm text-white">Drag &amp; drop PDFs, or click to browse</p>
-        <p className="mt-1 text-xs text-slate-400">PDF only · up to 25MB each · multiple files supported</p>
+        <p className="mt-4 text-sm text-white">{t("upload.drop")}</p>
+        <p className="mt-1 text-xs text-slate-400">{t("upload.hint")}</p>
         <input
           ref={inputRef}
           type="file"
@@ -163,7 +165,7 @@ export default function UploadForm() {
                   value={it.title}
                   onChange={(e) => patch(it.id, { title: e.target.value })}
                   disabled={running}
-                  placeholder="Document title"
+                  placeholder={t("upload.titlePlaceholder")}
                   aria-label={`Title for ${it.file.name}`}
                   className="mt-3 w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-blue-400/40 focus:outline-none focus:ring-2 focus:ring-blue-400/20 disabled:opacity-60"
                 />
@@ -176,7 +178,7 @@ export default function UploadForm() {
               )}
 
               {it.state === "queued" && (
-                <p className="mt-2 text-xs text-emerald-400">Uploaded as a draft — queued for analysis.</p>
+                <p className="mt-2 text-xs text-emerald-400">{t("upload.queued")}</p>
               )}
 
               {it.state === "failed" && <p className="mt-2 text-xs text-red-400">{it.error}</p>}
@@ -187,17 +189,16 @@ export default function UploadForm() {
 
       {queued > 0 && !running && (
         <p className="text-xs text-slate-400">
-          {queued} {queued === 1 ? "document is" : "documents are"} queued. The worker analyses them one
-          at a time, in the order shown.
+{queued} {queued === 1 ? t("upload.queueNoteOne") : t("upload.queueNoteMany")}
         </p>
       )}
 
       <Button onClick={submit} disabled={outstanding === 0 || running}>
         {running
-          ? "Uploading…"
+          ? t("upload.uploading")
           : outstanding > 1
-            ? `Upload ${outstanding} documents`
-            : "Upload document"}
+            ? `${t("upload.submitMany")} (${outstanding})`
+            : t("upload.submitOne")}
       </Button>
     </div>
   )
