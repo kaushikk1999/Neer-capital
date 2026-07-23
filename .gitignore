@@ -19,3 +19,25 @@ node_modules
 /playwright/.cache
 tsconfig.tsbuildinfo
 .DS_Store
+
+# local dev server bookkeeping
+/dev.log
+/dev.pid
+
+# one-off debugging and inspection scripts kept at the repo root. These probe
+# production R2 and the database directly and are not part of the application,
+# so they must never reach a build.
+/check_db.js
+/query_jobs.js
+/query_jobs.ts
+/test_r2*.js
+/test-db.ts
+/test.js
+/count.js
+
+# scratch capture and rendering helpers
+/automation/
+/frames/
+/scratch/
+/make_montage.py
+/make_pdf.py
