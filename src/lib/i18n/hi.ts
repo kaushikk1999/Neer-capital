@@ -10,6 +10,7 @@ export const hi: TranslationDict = {
   'nav.dashboard': 'मेरा पोर्टफोलियो',
   'nav.product': 'उत्पाद',
   'nav.solutions': 'समाधान',
+  'nav.reports': 'रिपोर्ट',
   'nav.pricing': 'मूल्य निर्धारण',
   'nav.about': 'हमारे बारे में',
   'nav.contact': 'संपर्क',
@@ -183,4 +184,11 @@ export const hi: TranslationDict = {
   'notFound.description': 'आप जिस पृष्ठ की तलाश कर रहे हैं वह स्थानांतरित हो सकता है, या लिंक पुराना है। आइए आपको विश्वसनीय जगह पर वापस ले चलते हैं।',
   'notFound.backHome': 'होम पर वापस',
   'notFound.contactUs': 'हमसे संपर्क करें',
+
+  'reports.heading': 'शोध रिपोर्ट',
+  'reports.subtitle': 'हमारी वित्तीय इंटेलिजेंस रिपोर्ट की लाइब्रेरी देखें। प्रत्येक रिपोर्ट का स्वतः विश्लेषण और संरचना की जाती है, और मूल स्रोत दस्तावेज़ से सत्यापित किया जाता है।',
+  'reports.badge': 'रिपोर्ट',
+  'reports.viewFull': 'पूरी रिपोर्ट देखें',
+  'reports.empty.title': 'अभी तक कोई रिपोर्ट प्रकाशित नहीं हुई',
+  'reports.empty.body': 'नई जानकारी के लिए बाद में देखें।',
 };

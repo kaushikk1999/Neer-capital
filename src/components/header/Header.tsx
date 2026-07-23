@@ -16,7 +16,10 @@ export function Header() {
   const [open, setOpen] = useState(false); 
   const { t } = useLanguage();
   const getNavKey = (label: string) => {
-    const map: Record<string, string> = { 'Dashboard': 'nav.dashboard', 'Product': 'nav.product', 'Solutions': 'nav.solutions', 'Pricing': 'nav.pricing', 'About': 'nav.about', 'Contact': 'nav.contact' };
+    // Every entry in navItems needs a key here. A label with no mapping falls
+    // through to itself and silently renders in English on every locale, which
+    // is how Reports stayed untranslated.
+    const map: Record<string, string> = { 'Dashboard': 'nav.dashboard', 'Product': 'nav.product', 'Solutions': 'nav.solutions', 'Reports': 'nav.reports', 'Pricing': 'nav.pricing', 'About': 'nav.about', 'Contact': 'nav.contact' };
     return map[label] || label;
   };
 

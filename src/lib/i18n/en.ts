@@ -10,6 +10,7 @@ export const en: TranslationDict = {
   'nav.dashboard': 'My Portfolio',
   'nav.product': 'Product',
   'nav.solutions': 'Solutions',
+  'nav.reports': 'Reports',
   'nav.pricing': 'Pricing',
   'nav.about': 'About',
   'nav.contact': 'Contact',
@@ -204,4 +205,13 @@ export const en: TranslationDict = {
   'notFound.description': "The page you are looking for may have moved, or the link is out of date. Let's get you back to trusted ground.",
   'notFound.backHome': 'Back to home',
   'notFound.contactUs': 'Contact us',
+
+  // Reports index. The report titles and summaries themselves come from the
+  // analysed source documents and stay in their original language.
+  'reports.heading': 'Research Reports',
+  'reports.subtitle': 'Browse our library of financial intelligence reports. Each report is automatically analysed, structured, and verified against the original source document.',
+  'reports.badge': 'Report',
+  'reports.viewFull': 'View full report',
+  'reports.empty.title': 'No reports published yet',
+  'reports.empty.body': 'Check back later for new insights.',
 };
