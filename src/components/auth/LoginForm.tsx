@@ -85,7 +85,7 @@ export default function LoginForm({ initialError = "" }: { initialError?: string
             <label className="text-sm font-medium text-gray-200 block" htmlFor="password">
               {t('auth.passwordLabel')}
             </label>
-            <Link href="/forgot-password" className="text-xs text-blue-400 hover:text-blue-300">Forgot password?</Link>
+            <Link href="/forgot-password" className="text-xs text-blue-400 hover:text-blue-300">{t("auth.forgotLink")}</Link>
           </div>
           <PasswordInput
             id="password"

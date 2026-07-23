@@ -234,6 +234,7 @@ export const en: TranslationDict = {
   'auth.legal.signIn': 'By signing in, you agree to our Terms of Service and Privacy Policy.',
   'auth.legal.signUp': 'By creating an account, you agree to our Terms of Service and Privacy Policy.',
   'auth.backToSignIn': 'Back to sign in',
+  'auth.forgotLink': 'Forgot password?',
   'auth.forgot.title': 'Reset password',
   'auth.forgot.subtitle': "Enter your email and we'll send you a reset link.",
   'auth.forgot.sending': 'Sending…',

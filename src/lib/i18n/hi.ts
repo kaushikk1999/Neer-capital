@@ -233,6 +233,7 @@ export const hi: TranslationDict = {
   'auth.legal.signIn': 'साइन इन करके, आप हमारी सेवा की शर्तों और गोपनीयता नीति से सहमत होते हैं।',
   'auth.legal.signUp': 'खाता बनाकर, आप हमारी सेवा की शर्तों और गोपनीयता नीति से सहमत होते हैं।',
   'auth.backToSignIn': 'साइन इन पर वापस',
+  'auth.forgotLink': 'पासवर्ड भूल गए?',
   'auth.forgot.title': 'पासवर्ड रीसेट करें',
   'auth.forgot.subtitle': 'अपना ईमेल दर्ज करें और हम आपको रीसेट लिंक भेजेंगे।',
   'auth.forgot.sending': 'भेजा जा रहा है…',
