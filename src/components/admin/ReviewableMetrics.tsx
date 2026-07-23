@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react"
 import { Check, X, HelpCircle, Eye, Loader2 } from "lucide-react"
 import { EvidenceDrawer, type EvidenceDetail, type VerificationTier } from "@/components/admin/EvidenceDrawer"
 import { CSRF_HEADER } from "@/lib/security/csrf-constants"
+import { useLanguage } from "@/lib/i18n/LanguageContext"
 
 /**
  * Metric grid with per-field review actions.
@@ -64,6 +65,7 @@ export function ReviewableMetrics({
   metrics: ReviewableMetric[]
   canReview: boolean
 }) {
+  const { t } = useLanguage()
   const [metrics, setMetrics] = useState(initialMetrics)
   const [revision, setRevision] = useState(initialRevision)
   const [pending, setPending] = useState<string | null>(null)
@@ -82,7 +84,7 @@ export function ReviewableMetrics({
 
       const token = csrf ?? (await getCsrfToken())
       if (!token) {
-        setError("Could not obtain a security token. Reload the page and try again.")
+        setError(t("metrics.noToken"))
         setPending(null)
         return
       }
@@ -110,12 +112,12 @@ export function ReviewableMetrics({
         }
 
         if (res.status === 409) {
-          setError(data.message ?? "This draft changed while you were reviewing it. Reload before continuing.")
+          setError(data.message ?? t("metrics.stale"))
           if (typeof data.currentRevision === "number") setRevision(data.currentRevision)
           return
         }
         if (!res.ok || !data.ok) {
-          setError(data.message ?? data.error ?? "The action could not be completed.")
+          setError(data.message ?? data.error ?? t("metrics.actionFailed"))
           return
         }
 
@@ -124,12 +126,15 @@ export function ReviewableMetrics({
         )
         if (typeof data.revision === "number") setRevision(data.revision)
       } catch {
-        setError("Network error. The action was not applied.")
+        setError(t("metrics.networkError"))
       } finally {
         setPending(null)
       }
     },
-    [analysisId, csrf, revision]
+    // t is not memoised by the provider, so this callback is rebuilt each
+    // render. That is fine here: it only runs from click handlers, and a
+    // stale t would show the previous language after a switch.
+    [analysisId, csrf, revision, t]
   )
 
   const openEvidence = (m: ReviewableMetric) =>
@@ -142,7 +147,7 @@ export function ReviewableMetrics({
       sourcePage: m.sourcePage,
       quote: m.sourceQuote,
       verification: m.verification,
-      extractionMethod: "Text layer",
+      extractionMethod: t("evidence.textLayer"),
       confidence: m.confidenceLevel,
       validationStatus: m.validationStatus,
       reviewStatus: m.reviewStatus,
@@ -181,8 +186,8 @@ export function ReviewableMetrics({
 
               <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px]">
                 {m.period && <span className="uppercase tracking-wider text-gray-500">{m.period}</span>}
-                {conflicting && <span className="text-red-300">Conflicting source values</span>}
-                {!conflicting && unverified && <span className="text-amber-300">Evidence unverified</span>}
+                {conflicting && <span className="text-red-300">{t("metrics.conflicting")}</span>}
+                {!conflicting && unverified && <span className="text-amber-300">{t("metrics.unverified")}</span>}
                 {m.sourcePage != null && <span className="text-gray-600">p{m.sourcePage}</span>}
               </div>
 
@@ -192,7 +197,7 @@ export function ReviewableMetrics({
                   onClick={() => openEvidence(m)}
                   className="inline-flex items-center gap-1 rounded-md border border-white/10 px-2 py-1 text-xs text-gray-300 transition hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
                 >
-                  <Eye className="h-3 w-3" /> Evidence
+                  <Eye className="h-3 w-3" /> {t("metrics.evidence")}
                 </button>
 
                 {canReview && (
@@ -203,7 +208,7 @@ export function ReviewableMetrics({
                       onClick={() => act(m, "APPROVE")}
                       className="inline-flex items-center gap-1 rounded-md border border-emerald-400/25 px-2 py-1 text-xs text-emerald-300 transition hover:bg-emerald-400/10 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
                     >
-                      {pending === m.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />} Approve
+                      {pending === m.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />} {t("metrics.approve")}
                     </button>
                     <button
                       type="button"
@@ -211,7 +216,7 @@ export function ReviewableMetrics({
                       onClick={() => act(m, "REJECT")}
                       className="inline-flex items-center gap-1 rounded-md border border-red-400/25 px-2 py-1 text-xs text-red-300 transition hover:bg-red-400/10 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
                     >
-                      <X className="h-3 w-3" /> Reject
+                      <X className="h-3 w-3" /> {t("metrics.reject")}
                     </button>
                     <button
                       type="button"
@@ -219,7 +224,7 @@ export function ReviewableMetrics({
                       onClick={() => act(m, "MARK_MISSING")}
                       className="inline-flex items-center gap-1 rounded-md border border-amber-400/25 px-2 py-1 text-xs text-amber-300 transition hover:bg-amber-400/10 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
                     >
-                      <HelpCircle className="h-3 w-3" /> Missing
+                      <HelpCircle className="h-3 w-3" /> {t("metrics.missing")}
                     </button>
                   </>
                 )}

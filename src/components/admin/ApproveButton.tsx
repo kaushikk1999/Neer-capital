@@ -3,8 +3,10 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { CheckCircle } from "lucide-react"
+import { useLanguage } from "@/lib/i18n/LanguageContext"
 
 export default function ApproveButton({ documentId, analysisId, isAlreadyPublished }: { documentId: string, analysisId: string, isAlreadyPublished: boolean }) {
+  const { t } = useLanguage()
   const router = useRouter()
   const [isPublishing, setIsPublishing] = useState(false)
   const [error, setError] = useState("")
@@ -21,7 +23,7 @@ export default function ApproveButton({ documentId, analysisId, isAlreadyPublish
 
       if (!res.ok) {
         const data = await res.json()
-        throw new Error(data.error || "Failed to publish")
+        throw new Error(data.error || t("review.publishFailed"))
       }
       
       router.push("/admin/documents")
@@ -35,7 +37,7 @@ export default function ApproveButton({ documentId, analysisId, isAlreadyPublish
   if (isAlreadyPublished) {
     return (
       <span className="flex items-center gap-2 text-emerald-400 font-medium px-4 py-2 border border-emerald-500/20 bg-emerald-500/10 rounded-xl text-sm">
-        <CheckCircle className="w-4 h-4" /> Live in Production
+        <CheckCircle className="w-4 h-4" /> {t("review.livePublished")}
       </span>
     )
   }
@@ -49,7 +51,7 @@ export default function ApproveButton({ documentId, analysisId, isAlreadyPublish
         className="flex items-center gap-2 bg-white text-black hover:bg-gray-200 transition-colors font-medium px-5 py-2 rounded-xl text-sm disabled:opacity-50"
       >
         <CheckCircle className="w-4 h-4" />
-        {isPublishing ? "Publishing..." : "Approve & Publish"}
+        {isPublishing ? t("review.publishing") : t("review.approvePublish")}
       </button>
     </div>
   )

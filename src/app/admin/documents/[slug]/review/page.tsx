@@ -8,6 +8,7 @@ import { ExtractionQualityChip, ExtractionQualityPanel } from "@/components/admi
 import { RecommendationCard } from "@/components/admin/RecommendationCard"
 import { ReviewableMetrics } from "@/components/admin/ReviewableMetrics"
 import type { QualityCoverage } from "@/lib/report/types"
+import { T, ReviewBadge, PartialChip } from "@/components/admin/ReviewChrome"
 
 /** V2 admin rendering is gated; with the flag off this page is unchanged. */
 function v2AdminReadEnabled(): boolean {
@@ -63,9 +64,7 @@ export default async function AdminReviewPage({ params }: { params: { slug: stri
       {/* Admin Action Bar */}
       <div className="sticky top-0 z-50 w-full border-b border-white/10 bg-black/60 backdrop-blur-xl px-4 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <span className="bg-blue-500/20 text-blue-300 border border-blue-500/30 px-3 py-1 rounded-full text-xs font-semibold tracking-wider uppercase">
-            Admin Draft Review
-          </span>
+          <ReviewBadge />
           <span className="text-gray-400 text-sm">{document.title}</span>
         </div>
         <div className="flex items-center gap-4">
@@ -76,7 +75,7 @@ export default async function AdminReviewPage({ params }: { params: { slug: stri
             className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm font-medium transition-colors"
           >
             <FileText className="w-4 h-4" />
-            View Original PDF
+            <T k="review.viewPdf" />
           </a>
           <ApproveButton documentId={document.id} analysisId={analysis.id} isAlreadyPublished={document.published && document.publishedAnalysisId === analysis.id} />
         </div>
@@ -99,9 +98,7 @@ export default async function AdminReviewPage({ params }: { params: { slug: stri
             */}
             {isV2 && <ExtractionQualityChip coverage={coverage} />}
             {isV2 && analysis.status === "PARTIAL" && (
-              <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-2.5 py-1 text-xs font-medium text-amber-300">
-                Partial extraction — publication blocked
-              </span>
+              <PartialChip />
             )}
           </div>
         </header>
@@ -112,9 +109,9 @@ export default async function AdminReviewPage({ params }: { params: { slug: stri
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
           <div className="md:col-span-2 space-y-4 p-8 rounded-3xl bg-white/[0.02] border border-white/[0.05] backdrop-blur-xl relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-blue-500/10 transition-colors duration-500" />
-            <h2 className="text-sm font-medium text-gray-400 uppercase tracking-widest">Executive Summary</h2>
+            <h2 className="text-sm font-medium text-gray-400 uppercase tracking-widest"><T k="review.execSummary" /></h2>
             <p className="text-lg md:text-xl leading-relaxed text-gray-200 whitespace-pre-wrap">
-              {analysis.summary || "No executive summary available."}
+              {analysis.summary || <T k="review.noSummary" />}
             </p>
           </div>
           {isV2 ? (
@@ -124,7 +121,7 @@ export default async function AdminReviewPage({ params }: { params: { slug: stri
             />
           ) : (
             <div className="space-y-4 p-8 rounded-3xl bg-white/[0.02] border border-white/[0.05] backdrop-blur-xl">
-              <h2 className="text-sm font-medium text-gray-400 uppercase tracking-widest">Recommendation</h2>
+              <h2 className="text-sm font-medium text-gray-400 uppercase tracking-widest"><T k="review.recommendation" /></h2>
               <div className="flex items-end gap-3">
                 <span className="text-5xl font-bold text-white tracking-tighter">
                   {analysis.recommendation || "N/A"}
@@ -132,7 +129,7 @@ export default async function AdminReviewPage({ params }: { params: { slug: stri
               </div>
               {analysis.valuation && (
                 <p className="text-sm text-gray-500 mt-4">
-                  Methodology: <span className="text-gray-300">{analysis.valuation}</span>
+                  <T k="review.methodology" /> <span className="text-gray-300">{analysis.valuation}</span>
                 </p>
               )}
             </div>
@@ -143,7 +140,7 @@ export default async function AdminReviewPage({ params }: { params: { slug: stri
         {analysis.metrics.length > 0 && (
           <section className="mb-20">
             <h3 className="text-2xl font-semibold mb-8 flex items-center gap-3">
-              <TrendingUp className="w-6 h-6 text-blue-400" /> Key Metrics
+              <TrendingUp className="w-6 h-6 text-blue-400" /> <T k="review.keyMetrics" />
             </h3>
             {isV2 ? (
               <ReviewableMetrics
@@ -191,7 +188,7 @@ export default async function AdminReviewPage({ params }: { params: { slug: stri
         {analysis.charts.length > 0 && (
           <section className="mb-20">
             <h3 className="text-2xl font-semibold mb-8 flex items-center gap-3">
-              <BarChart3 className="w-6 h-6 text-blue-400" /> Visualizations
+              <BarChart3 className="w-6 h-6 text-blue-400" /> <T k="review.visualizations" />
             </h3>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {analysis.charts.map((chart) => (
@@ -229,7 +226,7 @@ export default async function AdminReviewPage({ params }: { params: { slug: stri
           <section className="mb-20 p-8 md:p-12 rounded-3xl bg-red-950/20 border border-red-500/20 relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-r from-red-500/5 to-transparent pointer-events-none" />
             <h3 className="text-2xl font-semibold text-red-400 mb-8 flex items-center gap-3">
-              <AlertTriangle className="w-6 h-6" /> Key Risks
+              <AlertTriangle className="w-6 h-6" /> <T k="review.keyRisks" />
             </h3>
             <div className="prose prose-invert prose-red max-w-none">
               {typeof analysis.risks === 'string' ? (
@@ -238,12 +235,12 @@ export default async function AdminReviewPage({ params }: { params: { slug: stri
                     <li key={i} className="pl-4 border-l border-red-500/30">
                       <strong className="text-white block mb-1 text-lg">{risk.risk}</strong>
                       <span className="text-gray-400 block mb-3 leading-relaxed">{risk.explanation}</span>
-                      <em className="text-xs text-red-400/70 bg-red-950/50 px-2 py-1 rounded inline-block">Source: &quot;{risk.evidence}&quot;</em>
+                      <em className="text-xs text-red-400/70 bg-red-950/50 px-2 py-1 rounded inline-block"><T k="review.source" /> &quot;{risk.evidence}&quot;</em>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="text-gray-400">No risks identified.</p>
+                <p className="text-gray-400"><T k="review.noRisks" /></p>
               )}
             </div>
           </section>

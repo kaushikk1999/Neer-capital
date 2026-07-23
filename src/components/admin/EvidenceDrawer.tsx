@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react"
 import { X, FileText, Calculator, AlertTriangle, Quote } from "lucide-react"
+import { useLanguage } from "@/lib/i18n/LanguageContext"
 
 /**
  * Provenance panel for a single extracted value.
@@ -38,19 +39,20 @@ export interface EvidenceDetail {
   documentId?: string
 }
 
-const TIER: Record<VerificationTier, { label: string; cls: string; verbatim: boolean }> = {
-  EXACT_MATCH: { label: "Verified verbatim", cls: "text-emerald-300 border-emerald-400/30 bg-emerald-400/10", verbatim: true },
-  NORMALIZED_MATCH: { label: "Verified (normalised text)", cls: "text-sky-300 border-sky-400/30 bg-sky-400/10", verbatim: true },
-  APPROXIMATE_MATCH: { label: "Approximate — not verbatim", cls: "text-amber-300 border-amber-400/30 bg-amber-400/10", verbatim: false },
-  UNVERIFIED: { label: "Unverified — could not be located", cls: "text-red-300 border-red-400/30 bg-red-400/10", verbatim: false },
-  CONFLICTING: { label: "Conflicting sources", cls: "text-red-300 border-red-400/30 bg-red-400/10", verbatim: false },
+const TIER: Record<VerificationTier, { cls: string; verbatim: boolean }> = {
+  EXACT_MATCH: { cls: "text-emerald-300 border-emerald-400/30 bg-emerald-400/10", verbatim: true },
+  NORMALIZED_MATCH: { cls: "text-sky-300 border-sky-400/30 bg-sky-400/10", verbatim: true },
+  APPROXIMATE_MATCH: { cls: "text-amber-300 border-amber-400/30 bg-amber-400/10", verbatim: false },
+  UNVERIFIED: { cls: "text-red-300 border-red-400/30 bg-red-400/10", verbatim: false },
+  CONFLICTING: { cls: "text-red-300 border-red-400/30 bg-red-400/10", verbatim: false },
 }
 
 function Row({ label, value }: { label: string; value: string | null }) {
+  const { t } = useLanguage()
   return (
     <div className="flex justify-between gap-4 border-b border-white/5 py-2 text-sm">
       <dt className="shrink-0 text-gray-500">{label}</dt>
-      <dd className="text-right text-gray-200">{value ?? <span className="text-gray-600">Not recorded</span>}</dd>
+      <dd className="text-right text-gray-200">{value ?? <span className="text-gray-600">{t("evidence.notRecorded")}</span>}</dd>
     </div>
   )
 }
@@ -62,6 +64,7 @@ export function EvidenceDrawer({
   detail: EvidenceDetail | null
   onClose: () => void
 }) {
+  const { t } = useLanguage()
   const closeRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
@@ -79,17 +82,17 @@ export function EvidenceDrawer({
   const tier = detail.verification ? TIER[detail.verification] : null
 
   return (
-    <div className="fixed inset-0 z-[60] flex justify-end" role="dialog" aria-modal="true" aria-label="Source evidence">
+    <div className="fixed inset-0 z-[60] flex justify-end" role="dialog" aria-modal="true" aria-label={t("evidence.title")}>
       <button
         type="button"
-        aria-label="Close evidence panel"
+        aria-label={t("evidence.close")}
         onClick={onClose}
         className="flex-1 cursor-default bg-black/60 backdrop-blur-sm"
       />
       <aside className="h-full w-full max-w-md overflow-y-auto border-l border-white/10 bg-[#0a0f1c] p-6 shadow-2xl sm:max-w-lg">
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs uppercase tracking-widest text-gray-500">Source evidence</p>
+            <p className="text-xs uppercase tracking-widest text-gray-500">{t("evidence.title")}</p>
             <h2 className="mt-1 text-lg font-semibold text-white">{detail.fieldLabel}</h2>
           </div>
           <button
@@ -106,7 +109,7 @@ export function EvidenceDrawer({
         {tier && (
           <p className={`mb-4 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium ${tier.cls}`}>
             {tier.verbatim ? <Quote className="h-3.5 w-3.5" /> : <AlertTriangle className="h-3.5 w-3.5" />}
-            {tier.label}
+            {t(`evidence.tier.${detail.verification}`)}
           </p>
         )}
 
@@ -121,25 +124,25 @@ export function EvidenceDrawer({
             </blockquote>
             <figcaption className="mt-2 text-xs text-gray-500">
               {tier?.verbatim
-                ? `Located on page ${detail.sourcePage ?? "?"} of the source report.`
-                : "This excerpt could not be matched to the cited page and is not shown as a verbatim quote."}
+                ? `${t("evidence.locatedPage")} ${detail.sourcePage ?? "?"} ${t("evidence.ofSource")}`
+                : t("evidence.unmatched")}
             </figcaption>
           </figure>
         ) : (
-          <p className="mb-5 text-sm text-gray-500">No excerpt was captured for this value.</p>
+          <p className="mb-5 text-sm text-gray-500">{t("evidence.noExcerpt")}</p>
         )}
 
         <dl className="mb-5">
-          <Row label="Normalised value" value={detail.normalizedValue} />
-          <Row label="Raw source text" value={detail.rawValue} />
-          <Row label="Period" value={detail.period} />
-          <Row label="Basis" value={detail.classification} />
-          <Row label="Source page" value={detail.sourcePage != null ? String(detail.sourcePage) : null} />
-          <Row label="Extraction method" value={detail.extractionMethod} />
-          <Row label="Confidence" value={detail.confidence} />
-          <Row label="Validation" value={detail.validationStatus} />
-          <Row label="Review status" value={detail.reviewStatus} />
-          <Row label="Attribution" value={detail.provenance} />
+          <Row label={t("evidence.row.normalized")} value={detail.normalizedValue} />
+          <Row label={t("evidence.row.raw")} value={detail.rawValue} />
+          <Row label={t("evidence.row.period")} value={detail.period} />
+          <Row label={t("evidence.row.basis")} value={detail.classification} />
+          <Row label={t("evidence.row.page")} value={detail.sourcePage != null ? String(detail.sourcePage) : null} />
+          <Row label={t("evidence.row.method")} value={detail.extractionMethod} />
+          <Row label={t("evidence.row.confidence")} value={detail.confidence} />
+          <Row label={t("evidence.row.validation")} value={detail.validationStatus} />
+          <Row label={t("evidence.row.reviewStatus")} value={detail.reviewStatus} />
+          <Row label={t("evidence.row.attribution")} value={detail.provenance} />
         </dl>
 
         {detail.conflicts && detail.conflicts.length > 0 && (
