@@ -1,4 +1,5 @@
 import SignupForm from "@/components/auth/SignupForm"
+import { AuthLegalNote } from "@/components/auth/AuthLegalNote"
 import { Logo } from "@/components/ui/Logo"
 
 export const metadata = {
@@ -13,9 +14,7 @@ export default function RegisterPage() {
       <div className="relative z-10 w-full max-w-md px-4 sm:px-0 flex flex-col items-center">
         <div className="mb-8"><Logo /></div>
         <SignupForm />
-        <p className="mt-8 text-center text-sm text-gray-500">
-          By creating an account, you agree to our Terms of Service and Privacy Policy.
-        </p>
+        <AuthLegalNote variant="signUp" />
       </div>
     </div>
   )

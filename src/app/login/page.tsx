@@ -1,4 +1,5 @@
 import LoginForm from "@/components/auth/LoginForm"
+import { AuthLegalNote } from "@/components/auth/AuthLegalNote"
 import { Logo } from "@/components/ui/Logo"
 
 export const metadata = {
@@ -19,9 +20,7 @@ export default function LoginPage() {
         
         <LoginForm />
         
-        <p className="mt-8 text-center text-sm text-gray-500">
-          By signing in, you agree to our Terms of Service and Privacy Policy.
-        </p>
+        <AuthLegalNote variant="signIn" />
       </div>
     </div>
   )
