@@ -396,4 +396,8 @@ export const en: TranslationDict = {
   'evidence.row.reviewStatus': 'Review status',
   'evidence.row.attribution': 'Attribution',
   'evidence.textLayer': 'Text layer',
+  'feedback.heading': 'How useful was this analysis?',
+  'feedback.body': 'We are testing how faithfully our extraction reflects the source report. If anything here looks wrong, missing, or overstated, we want to hear it.',
+  'feedback.cta': 'Share feedback',
+  'feedback.time': 'Takes about 10 minutes',
 };

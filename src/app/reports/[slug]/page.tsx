@@ -2,6 +2,7 @@ import { notFound } from "next/navigation"
 import { prisma } from "@/lib/db"
 import { FileText, Activity, AlertTriangle, TrendingUp, BarChart3 } from "lucide-react"
 import ReportChart from "@/components/charts/ReportChart"
+import { FeedbackPrompt } from "@/components/reports/FeedbackPrompt"
 
 async function getReport(slug: string) {
   const document = await prisma.document.findUnique({
@@ -172,6 +173,9 @@ export default async function ReportPage({ params }: { params: { slug: string } 
             </div>
           </section>
         )}
+
+        {/* Sits after the analysis so the reader has already formed a view. */}
+        <FeedbackPrompt reportSlug={doc.slug} reportTitle={doc.title} />
 
       </div>
     </div>

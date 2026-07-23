@@ -395,4 +395,8 @@ export const hi: TranslationDict = {
   'evidence.row.reviewStatus': 'समीक्षा स्थिति',
   'evidence.row.attribution': 'श्रेय',
   'evidence.textLayer': 'टेक्स्ट लेयर',
+  'feedback.heading': 'यह विश्लेषण कितना उपयोगी था?',
+  'feedback.body': 'हम परख रहे हैं कि हमारा निष्कर्षण मूल रिपोर्ट को कितनी सच्चाई से दर्शाता है। यदि यहाँ कुछ भी ग़लत, अनुपस्थित या बढ़ा-चढ़ाकर लगे, तो हमें बताएँ।',
+  'feedback.cta': 'प्रतिक्रिया दें',
+  'feedback.time': 'लगभग 10 मिनट लगते हैं',
 };
