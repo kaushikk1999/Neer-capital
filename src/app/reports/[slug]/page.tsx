@@ -66,27 +66,16 @@ export default async function ReportPage({ params }: { params: { slug: string } 
           </a>
         </header>
 
-        {/* Topline Summary */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
-          <div className="md:col-span-2 space-y-4 p-8 rounded-3xl bg-white/[0.02] border border-white/[0.05] backdrop-blur-xl relative overflow-hidden group">
+        {/* Topline Summary. The recommendation card was removed: a bare "BUY"
+            shown on the public page read as Neer's own call, when it is only
+            what the source analyst wrote. */}
+        <div className="mb-16">
+          <div className="space-y-4 p-8 rounded-3xl bg-white/[0.02] border border-white/[0.05] backdrop-blur-xl relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-blue-500/10 transition-colors duration-500" />
             <h2 className="text-sm font-medium text-gray-400 uppercase tracking-widest">Executive Summary</h2>
             <p className="text-lg md:text-xl leading-relaxed text-gray-200 whitespace-pre-wrap">
               {analysis.summary || "No executive summary available."}
             </p>
-          </div>
-          <div className="space-y-4 p-8 rounded-3xl bg-white/[0.02] border border-white/[0.05] backdrop-blur-xl">
-            <h2 className="text-sm font-medium text-gray-400 uppercase tracking-widest">Recommendation</h2>
-            <div className="flex items-end gap-3">
-              <span className="text-5xl font-bold text-white tracking-tighter">
-                {analysis.recommendation || "N/A"}
-              </span>
-            </div>
-            {analysis.valuation && (
-              <p className="text-sm text-gray-500 mt-4">
-                Methodology: <span className="text-gray-300">{analysis.valuation}</span>
-              </p>
-            )}
           </div>
         </div>
 
