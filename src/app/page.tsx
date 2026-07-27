@@ -1,6 +1,5 @@
 'use client';
 import { Hero } from '@/components/hero/Hero';
-import { TrustStrip } from '@/components/trust/TrustStrip';
 import { Section } from '@/components/ui/Section';
 import { PillarGrid } from '@/components/platform/PillarGrid';
 import { SolutionsGrid } from '@/components/solutions/SolutionsGrid';
@@ -14,7 +13,6 @@ export default function HomePage() {
   return (
     <>
       <Hero />
-      <TrustStrip />
       <Section id="product" eyebrow={t('product.eyebrow')} title={t('product.heading')} subtitle={t('product.subtitle')}>
         <PillarGrid />
       </Section>
