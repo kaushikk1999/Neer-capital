@@ -402,6 +402,6 @@ export const en: TranslationDict = {
   'feedback.time': 'Takes about 10 minutes',
   'heroLogin.title': 'Sign in',
   'heroLogin.subtitle': 'Access your dashboard and saved reports.',
-  'heroLogin.signedIn': 'You are signed in.',
+  'heroLogin.signedInAs': 'Signed in as',
   'heroLogin.goToDashboard': 'Go to dashboard',
 };

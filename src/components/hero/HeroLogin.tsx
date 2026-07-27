@@ -14,7 +14,7 @@ import { PasswordInput } from '@/components/auth/PasswordInput'
 // signed in the form would be noise, so it collapses to a dashboard shortcut.
 export function HeroLogin() {
   const { t } = useLanguage()
-  const { status } = useSession()
+  const { data: session, status } = useSession()
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -23,12 +23,41 @@ export function HeroLogin() {
   const [googleLoading, setGoogleLoading] = useState(false)
 
   if (status === 'authenticated') {
+    const user = session?.user
+    const name = user?.name?.trim() || user?.email || ''
+    const initial = (name || '?').charAt(0).toUpperCase()
+    const isAdmin = user?.role === 'ADMIN'
     return (
-      <div className="w-full rounded-2xl border border-white/10 bg-white/5 p-6 text-center shadow-xl backdrop-blur-lg">
-        <p className="text-sm text-slate-300">{t('heroLogin.signedIn')}</p>
+      <div className="w-full space-y-5 rounded-2xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur-lg">
+        <p className="text-xs uppercase tracking-widest text-slate-400">{t('heroLogin.signedInAs')}</p>
+        <div className="flex items-center gap-3">
+          {user?.image ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={user.image} alt={name} className="h-11 w-11 rounded-full border border-white/10" />
+          ) : (
+            <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-blue-500/15 text-sm font-medium text-blue-200">
+              {initial}
+            </div>
+          )}
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium text-white">{user?.name || user?.email}</p>
+            {user?.name && user?.email && (
+              <p className="truncate text-xs text-slate-400">{user.email}</p>
+            )}
+          </div>
+          <span
+            className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-medium ${
+              isAdmin
+                ? 'border-emerald-400/30 bg-emerald-400/10 text-emerald-300'
+                : 'border-white/10 bg-white/5 text-blue-200'
+            }`}
+          >
+            {user?.role}
+          </span>
+        </div>
         <Link
           href="/dashboard"
-          className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-white px-4 py-2.5 text-sm font-medium text-slate-900 transition hover:bg-slate-100"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-white px-4 py-2.5 text-sm font-medium text-slate-900 transition hover:bg-slate-100"
         >
           {t('heroLogin.goToDashboard')} <ArrowUpRight className="h-4 w-4" />
         </Link>

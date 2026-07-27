@@ -401,6 +401,6 @@ export const ta: TranslationDict = {
   'feedback.time': 'சுமார் 10 நிமிடங்கள் ஆகும்',
   'heroLogin.title': 'உள்நுழைக',
   'heroLogin.subtitle': 'உங்கள் டாஷ்போர்டு மற்றும் சேமித்த அறிக்கைகளை அணுகவும்.',
-  'heroLogin.signedIn': 'நீங்கள் உள்நுழைந்துள்ளீர்கள்.',
+  'heroLogin.signedInAs': 'உள்நுழைந்துள்ளது',
   'heroLogin.goToDashboard': 'டாஷ்போர்டுக்குச் செல்',
 };

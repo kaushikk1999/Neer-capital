@@ -401,6 +401,6 @@ export const hi: TranslationDict = {
   'feedback.time': 'लगभग 10 मिनट लगते हैं',
   'heroLogin.title': 'साइन इन करें',
   'heroLogin.subtitle': 'अपने डैशबोर्ड और सहेजी गई रिपोर्ट तक पहुँचें।',
-  'heroLogin.signedIn': 'आप साइन इन हैं।',
+  'heroLogin.signedInAs': 'साइन इन हैं',
   'heroLogin.goToDashboard': 'डैशबोर्ड पर जाएँ',
 };
