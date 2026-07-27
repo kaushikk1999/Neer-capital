@@ -399,4 +399,8 @@ export const hi: TranslationDict = {
   'feedback.body': 'हम परख रहे हैं कि हमारा निष्कर्षण मूल रिपोर्ट को कितनी सच्चाई से दर्शाता है। यदि यहाँ कुछ भी ग़लत, अनुपस्थित या बढ़ा-चढ़ाकर लगे, तो हमें बताएँ।',
   'feedback.cta': 'प्रतिक्रिया दें',
   'feedback.time': 'लगभग 10 मिनट लगते हैं',
+  'heroLogin.title': 'साइन इन करें',
+  'heroLogin.subtitle': 'अपने डैशबोर्ड और सहेजी गई रिपोर्ट तक पहुँचें।',
+  'heroLogin.signedIn': 'आप साइन इन हैं।',
+  'heroLogin.goToDashboard': 'डैशबोर्ड पर जाएँ',
 };

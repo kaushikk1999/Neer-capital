@@ -400,4 +400,8 @@ export const en: TranslationDict = {
   'feedback.body': 'We are testing how faithfully our extraction reflects the source report. If anything here looks wrong, missing, or overstated, we want to hear it.',
   'feedback.cta': 'Share feedback',
   'feedback.time': 'Takes about 10 minutes',
+  'heroLogin.title': 'Sign in',
+  'heroLogin.subtitle': 'Access your dashboard and saved reports.',
+  'heroLogin.signedIn': 'You are signed in.',
+  'heroLogin.goToDashboard': 'Go to dashboard',
 };
