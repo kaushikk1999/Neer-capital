@@ -398,7 +398,7 @@ export const en: TranslationDict = {
   'evidence.textLayer': 'Text layer',
   'feedback.heading': 'How useful was this analysis?',
   'feedback.generalHeading': 'Help shape Neer',
-  'feedback.generalBody': 'Neer is in early access. We would value your perspective on the research reports — what is clear, what is missing, and what would make them more useful in your work. Your feedback directly informs what we build next.',
+  'feedback.generalBody': 'Neer turns dense research reports into structured, source-traced insights. Tell us how useful you find them and what would make them more valuable to your work.',
   'feedback.body': 'We are testing how faithfully our extraction reflects the source report. If anything here looks wrong, missing, or overstated, we want to hear it.',
   'feedback.cta': 'Share feedback',
   'feedback.time': 'Takes about 2 minutes',
