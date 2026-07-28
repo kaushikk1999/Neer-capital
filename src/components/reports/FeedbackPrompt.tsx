@@ -9,23 +9,34 @@ import { useLanguage } from '@/lib/i18n/LanguageContext'
  * The form lives in Google Forms rather than in the app: responses land in a
  * sheet the research team controls, and questions can change without a deploy.
  *
- * Both settings are environment-driven and the block renders nothing when the
- * URL is unset, so this ships ahead of the form existing and appears the moment
- * the variable is filled in — no code change, no broken link in between.
+ * The URL is environment-driven and the block renders nothing when it is unset,
+ * so this ships ahead of the form existing and appears the moment the variable
+ * is filled in — no code change, no broken link in between.
+ *
+ * Two placements share this component:
+ *  - a report page passes the report's title, which prefills the form's "which
+ *    report" field so the response is attributable;
+ *  - the home page passes nothing, giving a general website-feedback prompt with
+ *    no prefill. The same form receives both.
  */
-export function FeedbackPrompt({ reportSlug, reportTitle }: { reportSlug: string; reportTitle: string }) {
+export function FeedbackPrompt({ reportSlug, reportTitle }: { reportSlug?: string; reportTitle?: string } = {}) {
   const { t } = useLanguage()
 
   const base = process.env.NEXT_PUBLIC_FEEDBACK_FORM_URL
   if (!base) return null
 
-  // Google Forms prefill: the entry id identifies the "which report" field.
-  // Without it a response arrives with no way to tell which report it judged,
-  // which makes the answer unusable once more than one report is published.
+  const report = reportTitle || reportSlug
   const entryId = process.env.NEXT_PUBLIC_FEEDBACK_FORM_ENTRY
-  const href = entryId
-    ? `${base}${base.includes('?') ? '&' : '?'}usp=pp_url&${encodeURIComponent(entryId)}=${encodeURIComponent(reportTitle || reportSlug)}`
-    : base
+
+  // Prefill the "which report" field only on a report page. On the home page
+  // there is no report, so the link opens the form with that field blank.
+  const href =
+    report && entryId
+      ? `${base}${base.includes('?') ? '&' : '?'}usp=pp_url&${encodeURIComponent(entryId)}=${encodeURIComponent(report)}`
+      : base
+
+  const headingKey = report ? 'feedback.heading' : 'feedback.generalHeading'
+  const bodyKey = report ? 'feedback.body' : 'feedback.generalBody'
 
   return (
     <section className="mb-20 rounded-3xl border border-blue-500/20 bg-blue-500/[0.04] p-8 md:p-10">
@@ -33,9 +44,9 @@ export function FeedbackPrompt({ reportSlug, reportTitle }: { reportSlug: string
         <div className="max-w-2xl">
           <h3 className="flex items-center gap-3 text-xl font-semibold text-white">
             <MessageSquare className="h-5 w-5 shrink-0 text-blue-400" />
-            {t('feedback.heading')}
+            {t(headingKey)}
           </h3>
-          <p className="mt-3 text-sm leading-relaxed text-gray-400">{t('feedback.body')}</p>
+          <p className="mt-3 text-sm leading-relaxed text-gray-400">{t(bodyKey)}</p>
         </div>
         <div className="shrink-0">
           <a

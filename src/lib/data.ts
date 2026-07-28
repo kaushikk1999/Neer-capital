@@ -39,7 +39,7 @@ export const solutions: Solution[] = [
 export const trustPoints = ['Zero-trust access model', 'Role-based permissions', 'Encryption in transit and at rest', 'Private deployment options', 'Audit logs and provenance', 'Data retention controls'];
 export const pricingPlans: PricingPlan[] = [
   { name: 'Self-serve', price: 'Starting at custom', description: 'For lean teams that want to move quickly with a secure, ready-to-use product.', features: ['Core AI workflows', 'Source citations', 'Team collaboration', 'Standard support'], cta: { label: 'Start conversation', href: '/contact' } },
-  { name: 'Enterprise', description: 'For organizations that need governance, deployment flexibility, and security review.', featured: true, features: ['Private deployment', 'SSO / RBAC', 'Audit logs', 'Data controls', 'Security review support'], cta: { label: 'Talk to sales', href: '/contact' } }
+  { name: 'Enterprise', description: 'For organizations that need governance, deployment flexibility, and security review.', featured: true, features: ['Private deployment', 'SSO / RBAC', 'Audit logs', 'Data controls'], cta: { label: 'Talk to sales', href: '/contact' } }
 ];
 export const faqs: FAQItem[] = [
   { q: 'How does Neer ensure answers are grounded in evidence?', a: 'Answers are grounded in approved enterprise sources, with cited evidence, retrieval traces, and confidence cues visible to users.' },
