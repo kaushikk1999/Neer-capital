@@ -29,9 +29,11 @@ export const workflows: WorkflowStep[] = [
 // key ties each card to its translation slot (solutions.<key>.*) so removing
 // one does not shift the others onto the wrong copy. sol2 (Corporate strategy)
 // was removed; its keys remain unused in the locale files.
+// sol1 now merges the former Investment teams and Risk & compliance cards.
+// sol2 (Corporate strategy) and sol3 (Risk & compliance) keys are retired but
+// left in the locale files, unused.
 export const solutions: Solution[] = [
-  { key: 'sol1', title: 'Investment teams', body: 'Accelerate diligence, compare competitors, and synthesize thematic research into investment narratives.' },
-  { key: 'sol3', title: 'Risk & compliance', body: 'Trace every response to approved sources with permissions, review logs, and security controls.' },
+  { key: 'sol1', title: 'Investment, risk & compliance', body: 'Accelerate diligence and synthesize thematic research into investment narratives, with every response traced to approved sources through permissions, review logs, and security controls.' },
   { key: 'sol4', title: 'Enterprise knowledge', body: 'Unify internal research and market intelligence in one governed AI experience.' }
 ];
 export const trustPoints = ['Zero-trust access model', 'Role-based permissions', 'Encryption in transit and at rest', 'Private deployment options', 'Audit logs and provenance', 'Data retention controls'];
