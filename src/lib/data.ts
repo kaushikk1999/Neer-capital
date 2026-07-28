@@ -26,11 +26,13 @@ export const workflows: WorkflowStep[] = [
   { step: '2', title: 'Reason', body: 'The assistant extracts entities, cross-checks citations, and identifies signal across time, geography, and language.' },
   { step: '3', title: 'Respond', body: 'Analysts receive concise answers, source chains, and follow-up prompts with export-ready artifacts.' }
 ];
+// key ties each card to its translation slot (solutions.<key>.*) so removing
+// one does not shift the others onto the wrong copy. sol2 (Corporate strategy)
+// was removed; its keys remain unused in the locale files.
 export const solutions: Solution[] = [
-  { title: 'Investment teams', body: 'Accelerate diligence, compare competitors, and synthesize thematic research into investment narratives.' },
-  { title: 'Corporate strategy', body: 'Monitor macro shifts, benchmark markets, and equip leadership with decision-grade summaries.' },
-  { title: 'Risk & compliance', body: 'Trace every response to approved sources with permissions, review logs, and security controls.' },
-  { title: 'Enterprise knowledge', body: 'Unify internal research and market intelligence in one governed AI experience.' }
+  { key: 'sol1', title: 'Investment teams', body: 'Accelerate diligence, compare competitors, and synthesize thematic research into investment narratives.' },
+  { key: 'sol3', title: 'Risk & compliance', body: 'Trace every response to approved sources with permissions, review logs, and security controls.' },
+  { key: 'sol4', title: 'Enterprise knowledge', body: 'Unify internal research and market intelligence in one governed AI experience.' }
 ];
 export const trustPoints = ['Zero-trust access model', 'Role-based permissions', 'Encryption in transit and at rest', 'Private deployment options', 'Audit logs and provenance', 'Data retention controls'];
 export const pricingPlans: PricingPlan[] = [
