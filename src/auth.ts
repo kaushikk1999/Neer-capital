@@ -57,7 +57,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (!user.emailVerified) return null
 
         // Return only safe fields — never leak passwordHash into the JWT.
-        return { id: user.id, email: user.email, name: user.name, role: user.role }
+        // sessionVersion is carried so the token is stamped with the version
+        // current at sign-in; a later increment then invalidates this session.
+        return { id: user.id, email: user.email, name: user.name, role: user.role, sessionVersion: user.sessionVersion }
       },
     }),
   ],
@@ -76,12 +78,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (uid && (user || !token.role)) {
         const dbUser = await prisma.user.findUnique({
           where: { id: uid },
-          select: { id: true, role: true, email: true },
+          select: { id: true, role: true, email: true, sessionVersion: true },
         })
         if (dbUser) {
           token.uid = dbUser.id
           token.role = dbUser.role
           token.email = dbUser.email
+          // Stamp the version ONLY at sign-in. Refreshing it on later calls
+          // would let a stale token silently re-sync and defeat revocation; the
+          // authoritative guards compare this frozen value to the live DB value.
+          if (user) token.sessionVersion = dbUser.sessionVersion
         }
       }
       return token

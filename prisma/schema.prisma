@@ -103,13 +103,14 @@ enum Role {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime? @map("email_verified")
-  image         String?
-  passwordHash  String?   @map("password_hash")
-  role          Role      @default(USER)
+  id             String    @id @default(cuid())
+  name           String?
+  email          String?   @unique
+  emailVerified  DateTime? @map("email_verified")
+  image          String?
+  passwordHash   String?   @map("password_hash")
+  sessionVersion Int       @default(0) @map("session_version")
+  role           Role      @default(USER)
 
   accounts  Account[]
   sessions  Session[]

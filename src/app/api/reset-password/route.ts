@@ -23,7 +23,12 @@ export async function POST(req: NextRequest) {
   }
 
   const passwordHash = await bcrypt.hash(password, 10)
-  await prisma.user.update({ where: { email }, data: { passwordHash } })
+  // Rotate the password and revoke every existing session in one write: the
+  // version bump invalidates any JWT stamped with the prior value.
+  await prisma.user.update({
+    where: { email },
+    data: { passwordHash, sessionVersion: { increment: 1 } },
+  })
   await prisma.verificationToken.delete({ where: { identifier_token: { identifier: email, token } } })
 
   return NextResponse.json({ ok: true })

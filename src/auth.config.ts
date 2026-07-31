@@ -22,6 +22,10 @@ export const authConfig = {
         session.user.id = (token.uid as string) ?? session.user.id
         session.user.role = (token.role as "ADMIN" | "USER") ?? "USER"
         if (token.email) session.user.email = token.email as string
+        // Surfaced so server guards can compare against the live DB value.
+        // Left undefined for legacy tokens issued before this field existed —
+        // the guards treat that as invalid and require re-authentication.
+        session.user.sessionVersion = token.sessionVersion as number | undefined
       }
       return session
     },
