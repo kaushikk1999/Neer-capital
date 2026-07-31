@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation"
 import { UploadCloud, FileText, CheckCircle2, AlertCircle, X, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/Button"
 import { useLanguage } from "@/lib/i18n/LanguageContext"
+import { getCsrfToken } from "@/lib/security/csrf-client"
+import { CSRF_HEADER } from "@/lib/security/csrf-constants"
 
 const MAX = 25 * 1024 * 1024
 
@@ -56,14 +58,19 @@ export default function UploadForm() {
     setItems((prev) => [...prev, ...accepted])
   }
 
-  const uploadOne = (item: Item) =>
-    new Promise<void>((resolve) => {
+  const uploadOne = async (item: Item) => {
+    // Fetch the session-bound CSRF token before opening the request. The
+    // multipart Content-Type is left to the browser (it carries the boundary);
+    // only the CSRF header is attached.
+    const csrf = await getCsrfToken()
+    return new Promise<void>((resolve) => {
       patch(item.id, { state: "uploading", progress: 0, error: "" })
       const data = new FormData()
       data.append("file", item.file)
       data.append("title", item.title)
       const xhr = new XMLHttpRequest()
       xhr.open("POST", "/api/admin/documents/upload")
+      if (csrf) xhr.setRequestHeader(CSRF_HEADER, csrf)
       xhr.upload.onprogress = (e) => {
         if (e.lengthComputable) patch(item.id, { progress: Math.round((e.loaded / e.total) * 100) })
       }
@@ -83,6 +90,7 @@ export default function UploadForm() {
       }
       xhr.send(data)
     })
+  }
 
   // Sequential on purpose. Parallel uploads would race for R2 bandwidth and
   // leave the queue order non-deterministic, and the worker consumes jobs one

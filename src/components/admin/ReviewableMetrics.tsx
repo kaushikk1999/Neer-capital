@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react"
 import { Check, X, HelpCircle, Eye, Loader2 } from "lucide-react"
 import { EvidenceDrawer, type EvidenceDetail, type VerificationTier } from "@/components/admin/EvidenceDrawer"
 import { CSRF_HEADER } from "@/lib/security/csrf-constants"
+import { getCsrfToken } from "@/lib/security/csrf-client"
 import { useLanguage } from "@/lib/i18n/LanguageContext"
 
 /**
@@ -39,17 +40,6 @@ const STATUS_STYLE: Record<string, string> = {
   MISSING: "border-amber-400/30 bg-amber-400/10 text-amber-300",
   NEEDS_REVIEW: "border-amber-400/30 bg-amber-400/10 text-amber-300",
   NOT_REVIEWED: "border-white/10 bg-white/5 text-gray-400",
-}
-
-async function getCsrfToken(): Promise<string | null> {
-  try {
-    const res = await fetch("/api/admin/csrf", { credentials: "same-origin" })
-    if (!res.ok) return null
-    const data = (await res.json()) as { token?: string }
-    return data.token ?? null
-  } catch {
-    return null
-  }
 }
 
 export function ReviewableMetrics({

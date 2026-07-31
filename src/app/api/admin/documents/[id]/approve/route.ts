@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server"
-import { requireApiAdmin } from "@/lib/api-auth"
+import { assertAdminMutation } from "@/lib/security/mutation-guard"
 import { prisma } from "@/lib/db"
 
 export const runtime = "nodejs"
 
 export async function POST(req: Request, { params }: { params: { id: string } }) {
-  const guard = await requireApiAdmin()
-  if ("error" in guard) return guard.error
+  const guard = await assertAdminMutation(req, { methods: ["POST"] })
+  if (!guard.ok) return guard.response
 
   const { analysisId } = await req.json().catch(() => ({}))
   if (!analysisId) return NextResponse.json({ error: "Missing analysisId" }, { status: 400 })
@@ -33,7 +33,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
       await tx.auditLog.create({
         data: {
           event: "document.analysis.approved",
-          userId: guard.session.user.id,
+          userId: guard.userId,
           documentId: params.id,
           details: { analysisId }
         }

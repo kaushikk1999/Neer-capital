@@ -4,6 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { CheckCircle } from "lucide-react"
 import { useLanguage } from "@/lib/i18n/LanguageContext"
+import { adminJsonHeaders } from "@/lib/security/csrf-client"
 
 export default function ApproveButton({ documentId, analysisId, isAlreadyPublished }: { documentId: string, analysisId: string, isAlreadyPublished: boolean }) {
   const { t } = useLanguage()
@@ -17,7 +18,7 @@ export default function ApproveButton({ documentId, analysisId, isAlreadyPublish
     try {
       const res = await fetch(`/api/admin/documents/${documentId}/approve`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: await adminJsonHeaders(),
         body: JSON.stringify({ analysisId })
       })
 

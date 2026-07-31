@@ -2,6 +2,7 @@ import NextAuth from "next-auth"
 import Google from "next-auth/providers/google"
 import Credentials from "next-auth/providers/credentials"
 import { PrismaAdapter } from "@auth/prisma-adapter"
+import { randomBytes } from "crypto"
 import { prisma } from "@/lib/db"
 import bcrypt from "bcryptjs"
 import { authConfig } from "@/auth.config"
@@ -70,6 +71,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (user) {
         token.uid = user.id
         token.sub = user.id
+        // Per-session nonce for CSRF binding. Created once when this JWT session
+        // is established and never regenerated on later callback invocations, so
+        // it is stable within the session but differs across logins — a CSRF
+        // token bound to it cannot be replayed in another session.
+        if (!token.csrf) token.csrf = randomBytes(18).toString("base64url")
       }
 
       // Resolve the authoritative role from the DB using only the trusted

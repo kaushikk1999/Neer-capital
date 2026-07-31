@@ -14,10 +14,12 @@ export async function GET() {
   const guard = await requireApiAdmin()
   if ("error" in guard) return guard.error
 
-  const userId = guard.session.user?.id
-  if (!userId) return NextResponse.json({ error: "UNAUTHENTICATED" }, { status: 401 })
+  // Bind the token to the per-session nonce, not the account id. A session that
+  // predates the nonce (legacy) gets no token and must re-authenticate.
+  const sessionKey = guard.session.user?.csrfNonce
+  if (!sessionKey) return NextResponse.json({ error: "UNAUTHENTICATED" }, { status: 401 })
 
-  const token = issueCsrfToken(userId)
+  const token = issueCsrfToken(sessionKey)
   const res = NextResponse.json({ token })
   res.cookies.set(CSRF_COOKIE, token, {
     // Readable by the client on purpose: double-submit requires echoing it.

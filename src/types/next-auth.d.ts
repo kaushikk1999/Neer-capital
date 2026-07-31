@@ -9,6 +9,8 @@ declare module "next-auth" {
       // Frozen at sign-in; server guards compare it to the DB value to reject
       // sessions invalidated by a password reset, role change, etc.
       sessionVersion?: number
+      // Per-session nonce that admin CSRF tokens are bound to.
+      csrfNonce?: string
     } & DefaultSession["user"]
   }
   interface User {
@@ -22,5 +24,7 @@ declare module "next-auth/jwt" {
     role?: Role
     uid?: string
     sessionVersion?: number
+    // Per-session CSRF nonce, set once at sign-in.
+    csrf?: string
   }
 }

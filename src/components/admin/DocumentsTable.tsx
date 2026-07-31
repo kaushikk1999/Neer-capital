@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useLanguage } from "@/lib/i18n/LanguageContext"
+import { adminJsonHeaders } from "@/lib/security/csrf-client"
 
 type Doc = {
   id: string; title: string; slug: string; fileName: string; fileSize: number | null
@@ -34,7 +35,7 @@ export default function DocumentsTable({ documents }: { documents: Doc[] }) {
   const act = async (id: string, path: string, method: "POST" | "PATCH" | "DELETE") => {
     setBusy(id); setError("")
     try {
-      const res = await fetch(`/api/admin/documents/${id}${path}`, { method })
+      const res = await fetch(`/api/admin/documents/${id}${path}`, { method, headers: await adminJsonHeaders() })
       if (!res.ok) { const d = await res.json().catch(() => ({})); setError(d.error || t("docs.actionFailed")) }
       else router.refresh()
     } catch { setError(t("docs.networkError")) }

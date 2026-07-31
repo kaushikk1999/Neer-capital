@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
-import { requireApiAdmin, audit } from "@/lib/api-auth"
+import { audit } from "@/lib/api-auth"
+import { assertAdminMutation } from "@/lib/security/mutation-guard"
 import { putObject, deleteObject } from "@/lib/storage"
 import {
   validatePdf, sanitizeFilename, generateStorageKey, checksum, uniqueSlug, MAX_FILE_SIZE,
@@ -9,9 +10,11 @@ import {
 export const runtime = "nodejs"
 
 export async function POST(req: NextRequest) {
-  const guard = await requireApiAdmin()
-  if ("error" in guard) return guard.error
-  const { session } = guard
+  // CSRF + origin + admin validated from headers only, before the multipart
+  // body is parsed — nothing is stored on a rejected request.
+  const guard = await assertAdminMutation(req, { methods: ["POST"], contentTypes: ["multipart/form-data"] })
+  if (!guard.ok) return guard.response
+  const userId = guard.userId
 
   let form: FormData
   try { form = await req.formData() } catch { return NextResponse.json({ error: "Invalid upload." }, { status: 400 }) }
@@ -49,7 +52,7 @@ export async function POST(req: NextRequest) {
         storageKey,
         status: "DRAFT",
         published: false,
-        uploadedById: session.user.id,
+        uploadedById: userId,
         files: {
           create: {
             storageKey,
@@ -72,7 +75,7 @@ export async function POST(req: NextRequest) {
     await prisma.documentVersion.create({
       data: { documentId: document.id, version: 1, fileId: document.files[0].id },
     })
-    await audit("document.uploaded", { userId: session.user.id, documentId: document.id, details: { title, size: file.size } })
+    await audit("document.uploaded", { userId: userId, documentId: document.id, details: { title, size: file.size } })
     return NextResponse.json({ ok: true, id: document.id, slug: document.slug })
   } catch (err) {
     try {

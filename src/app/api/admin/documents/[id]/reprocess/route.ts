@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { revalidatePath } from "next/cache"
-import { requireApiAdmin } from "@/lib/api-auth"
+import { assertAdminMutation } from "@/lib/security/mutation-guard"
 import { prisma } from "@/lib/db"
 
 export const runtime = "nodejs"
@@ -8,9 +8,9 @@ export const runtime = "nodejs"
 // Re-queues a document's analysis job. Without this a FAILED job is terminal:
 // the worker only claims QUEUED jobs and never resets a failed one, so a
 // document that failed once could never be analysed again.
-export async function POST(_req: Request, { params }: { params: { id: string } }) {
-  const guard = await requireApiAdmin()
-  if ("error" in guard) return guard.error
+export async function POST(req: Request, { params }: { params: { id: string } }) {
+  const guard = await assertAdminMutation(req, { methods: ["POST"] })
+  if (!guard.ok) return guard.response
 
   const document = await prisma.document.findUnique({
     where: { id: params.id },

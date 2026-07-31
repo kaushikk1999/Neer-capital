@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
 import { requireApiAdmin, audit } from "@/lib/api-auth"
+import { assertAdminMutation } from "@/lib/security/mutation-guard"
 import { deleteObject } from "@/lib/storage"
 
 export const runtime = "nodejs"
@@ -17,10 +18,10 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
   return NextResponse.json({ document })
 }
 
-export async function DELETE(_req: Request, { params }: { params: { id: string } }) {
-  const guard = await requireApiAdmin()
-  if ("error" in guard) return guard.error
-  const { session } = guard
+export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+  const guard = await assertAdminMutation(req, { methods: ["DELETE"] })
+  if (!guard.ok) return guard.response
+  const userId = guard.userId
 
   const document = await prisma.document.findUnique({
     where: { id: params.id },
@@ -32,7 +33,7 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
   for (const f of document.files) await deleteObject(f.storageKey)
   await deleteObject(document.storageKey)
   await prisma.document.delete({ where: { id: document.id } })
-  await audit("document.deleted", { userId: session.user.id, documentId: document.id, details: { title: document.title } })
+  await audit("document.deleted", { userId, documentId: document.id, details: { title: document.title } })
 
   return NextResponse.json({ ok: true })
 }

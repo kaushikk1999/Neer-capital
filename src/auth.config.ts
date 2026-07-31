@@ -26,6 +26,10 @@ export const authConfig = {
         // Left undefined for legacy tokens issued before this field existed —
         // the guards treat that as invalid and require re-authentication.
         session.user.sessionVersion = token.sessionVersion as number | undefined
+        // Per-session nonce that CSRF tokens are bound to (server reads it at
+        // issue and verify time). Not a secret: the CSRF token, given to the
+        // client anyway, embeds it; forgery is prevented by the HMAC signature.
+        session.user.csrfNonce = token.csrf as string | undefined
       }
       return session
     },

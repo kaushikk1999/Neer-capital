@@ -125,16 +125,19 @@ function deny(status: number, code: string, message: string): GuardFail {
  */
 export async function assertAdminMutation(
   req: Request,
-  options: { methods?: string[] } = {}
+  options: { methods?: string[]; contentTypes?: string[] } = {}
 ): Promise<GuardOk | GuardFail> {
   const methods = options.methods ?? ["POST", "PATCH", "PUT", "DELETE"]
   if (!methods.includes(req.method.toUpperCase())) {
     return deny(405, "METHOD_NOT_ALLOWED", `${req.method} is not permitted on this route.`)
   }
 
+  // Content type is validated from the header only — the body is never read
+  // here, so multipart uploads pass through untouched for the route to parse.
+  const allowedTypes = options.contentTypes ?? ["application/json"]
   const contentType = (req.headers.get("content-type") ?? "").split(";")[0].trim().toLowerCase()
-  if (contentType !== "application/json") {
-    return deny(415, "UNSUPPORTED_MEDIA_TYPE", "Request body must be application/json.")
+  if (!allowedTypes.includes(contentType)) {
+    return deny(415, "UNSUPPORTED_MEDIA_TYPE", "Request media type is not allowed on this route.")
   }
 
   if (!originAllowed(req)) {
@@ -147,14 +150,18 @@ export async function assertAdminMutation(
   const userId = guard.session.user?.id
   if (!userId) return deny(401, "UNAUTHENTICATED", "No authenticated user on the session.")
 
-  // Session-bound: the token must have been issued for this user's session.
-  const sessionKey = userId
+  // Bind to the per-session nonce, not the account id, so a token from one
+  // login cannot be replayed in another. Fail closed if the session predates
+  // the nonce (legacy) — the user must re-authenticate to mutate.
+  const sessionKey = guard.session.user?.csrfNonce
+  if (!sessionKey) return deny(403, "CSRF_REJECTED", "CSRF validation failed.")
+
   const cookieToken = readCookie(req.headers.get("cookie"), CSRF_COOKIE)
   const headerToken = req.headers.get(CSRF_HEADER) ?? undefined
 
   const csrf = verifyCsrfToken(cookieToken, headerToken, sessionKey)
   if (!csrf.ok) {
-    return deny(403, "CSRF_REJECTED", `CSRF validation failed (${csrf.reason}).`)
+    return deny(403, "CSRF_REJECTED", "CSRF validation failed.")
   }
 
   return { ok: true, userId, sessionKey }
