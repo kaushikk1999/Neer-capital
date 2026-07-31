@@ -16,8 +16,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       ? [Google({
           clientId: process.env.GOOGLE_CLIENT_ID,
           clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-          // Link Google logins to a pre-seeded user with the same email (admins).
-          allowDangerousEmailAccountLinking: true,
+          // Never auto-link Google to an existing account by matching email:
+          // a matching address is not proof the same person controls both
+          // identities, and auto-linking enabled account pre-hijacking. On a
+          // same-email conflict NextAuth now fails closed (OAuthAccountNotLinked).
+          allowDangerousEmailAccountLinking: false,
           authorization: {
             params: {
               prompt: "select_account",
@@ -45,6 +48,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         )
 
         if (!isValid) return null
+
+        // Ownership of the email must be proven before a credentials account
+        // can authenticate. Without this an account created with someone else's
+        // address (unverified) would be usable — the pre-hijacking path.
+        // Returned generically (null) so it is indistinguishable from a wrong
+        // password; the login page offers an enumeration-safe resend link.
+        if (!user.emailVerified) return null
 
         // Return only safe fields — never leak passwordHash into the JWT.
         return { id: user.id, email: user.email, name: user.name, role: user.role }

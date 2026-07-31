@@ -147,6 +147,12 @@ export default function LoginForm({ initialError = "" }: { initialError?: string
         {t("auth.noAccount")}{" "}
         <Link href="/register" className="text-blue-400 hover:text-blue-300 font-medium">{t("auth.createAccount")}</Link>
       </p>
+
+      {/* Path for a legitimate user whose credentials account is not yet
+          verified. The target route is enumeration-safe. */}
+      <p className="text-center text-xs text-gray-500">
+        <Link href="/verify-email" className="hover:text-gray-300">{t("verify.resendLink")}</Link>
+      </p>
     </div>
   )
 }

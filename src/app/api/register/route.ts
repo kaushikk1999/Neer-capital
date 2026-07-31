@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/db';
+import { createEmailVerificationToken, sendVerificationEmail } from '@/lib/security/email-verification';
 
 export const runtime = 'nodejs';
 
@@ -25,8 +26,16 @@ export async function POST(req: NextRequest) {
     if (existing) return NextResponse.json({ error: 'An account with this email already exists.' }, { status: 409 });
 
     const passwordHash = await bcrypt.hash(password, 10);
+    // Created unverified: emailVerified stays null until the address is proven,
+    // so this account cannot authenticate yet (see credentials authorize).
     await prisma.user.create({ data: { name, email, passwordHash } });
-    return NextResponse.json({ ok: true });
+
+    // Issue and send a verification link. Delivery failures are not surfaced to
+    // the client (no enumeration, no false "sent" claim); the user can resend.
+    const rawToken = await createEmailVerificationToken(email);
+    await sendVerificationEmail(email, rawToken);
+
+    return NextResponse.json({ ok: true, verificationRequired: true });
   } catch {
     return NextResponse.json({ error: 'Unable to create your account. Please try again.' }, { status: 500 });
   }

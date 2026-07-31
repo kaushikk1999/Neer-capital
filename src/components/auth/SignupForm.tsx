@@ -2,21 +2,19 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { signIn } from "next-auth/react"
-import { useRouter } from "next/navigation"
 import { useLanguage } from "@/lib/i18n/LanguageContext"
 import { PasswordInput } from "@/components/auth/PasswordInput"
 
 const field = "w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-500 transition-colors"
 
 export default function SignupForm() {
-  const router = useRouter()
   const { t } = useLanguage()
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -34,18 +32,24 @@ export default function SignupForm() {
         setLoading(false)
         return
       }
-      // Account created — sign in immediately.
-      const signInRes = await signIn("credentials", { redirect: false, email, password })
-      if (signInRes?.error) {
-        router.push("/login")
-      } else {
-        router.push("/")
-        router.refresh()
-      }
+      // Account created but unverified — it cannot sign in until the email is
+      // confirmed, so show a check-your-email notice instead of auto sign-in.
+      setSubmitted(true)
+      setLoading(false)
     } catch {
       setError(t("auth.unexpectedError"))
       setLoading(false)
     }
+  }
+
+  if (submitted) {
+    return (
+      <div className="w-full max-w-md mx-auto space-y-4 bg-white/5 backdrop-blur-lg p-8 rounded-2xl border border-white/10 shadow-xl text-center">
+        <h1 className="text-2xl font-bold tracking-tight text-white">{t("verify.checkTitle")}</h1>
+        <div className="bg-emerald-500/10 border border-emerald-500/40 text-emerald-300 p-4 rounded-lg text-sm">{t("verify.checkBody")}</div>
+        <Link href="/login" className="inline-block text-blue-400 hover:text-blue-300 font-medium">{t("auth.backToSignIn")}</Link>
+      </div>
+    )
   }
 
   return (
