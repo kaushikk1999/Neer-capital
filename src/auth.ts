@@ -6,6 +6,9 @@ import { randomBytes } from "crypto"
 import { prisma } from "@/lib/db"
 import bcrypt from "bcryptjs"
 import { authConfig } from "@/auth.config"
+import { getClientIp } from "@/lib/security/client-ip"
+import { consume, peek, record, reset, logRateEvent } from "@/lib/security/rate-limit"
+import { POLICY } from "@/lib/security/rate-limit-policy"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
@@ -34,28 +37,58 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      authorize: async (credentials) => {
+      authorize: async (credentials, request) => {
         if (!credentials?.email || !credentials?.password) return null
+        const acct = (credentials.email as string).trim().toLowerCase()
+        const ip = getClientIp(request?.headers ?? new Headers()) ?? "noip"
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string },
-        })
+        // Auth.js owns the HTTP response here and cannot cleanly emit 429/503,
+        // so a throttled or limiter-unavailable attempt DENIES (returns null,
+        // indistinguishable from bad credentials). Broad per-IP burst runs
+        // FIRST so DB lookups and bcrypt are bounded even under attack.
+        try {
+          const ipGate = await consume([{ namespace: "login:ip", id: ip, ...POLICY.login.ip }])
+          if (!ipGate.ok) { logRateEvent("rate_limited", "login:ip"); return null }
+        } catch {
+          logRateEvent("limiter_unavailable", "login:ip")
+          return null
+        }
 
-        if (!user || !user.passwordHash) return null
+        const user = await prisma.user.findUnique({ where: { email: credentials.email as string } })
 
-        const isValid = await bcrypt.compare(
-          credentials.password as string,
-          user.passwordHash
-        )
+        // Stricter thresholds for admins (never disclosed). Failure counters are
+        // keyed on the normalized account so case variation cannot bypass them,
+        // and are consumed even for nonexistent accounts (probing is throttled).
+        const isAdmin = user?.role === "ADMIN"
+        const acctShort = isAdmin ? POLICY.login.adminAccountShort : POLICY.login.accountShort
+        const acctLong = isAdmin ? POLICY.login.adminAccountLong : POLICY.login.accountLong
+        const failRules = [
+          { namespace: "login:acctshort", id: acct, ...acctShort },
+          { namespace: "login:acctlong", id: acct, ...acctLong },
+          { namespace: "login:ipacct", id: `${ip}|${acct}`, ...POLICY.login.ipAccount },
+        ]
 
-        if (!isValid) return null
+        // If failure counters are already over, deny BEFORE bcrypt.
+        try {
+          const failGate = await peek(failRules)
+          if (!failGate.ok) { logRateEvent("rate_limited", "login:account"); return null }
+        } catch {
+          logRateEvent("limiter_unavailable", "login:account")
+          return null
+        }
+
+        if (!user || !user.passwordHash) { await record(failRules); return null }
+
+        const isValid = await bcrypt.compare(credentials.password as string, user.passwordHash)
+        if (!isValid) { await record(failRules); return null }
 
         // Ownership of the email must be proven before a credentials account
-        // can authenticate. Without this an account created with someone else's
-        // address (unverified) would be usable — the pre-hijacking path.
-        // Returned generically (null) so it is indistinguishable from a wrong
-        // password; the login page offers an enumeration-safe resend link.
+        // can authenticate (pre-hijacking guard). Not counted as a failed
+        // attempt — the caller already holds the correct password.
         if (!user.emailVerified) return null
+
+        // Success — clear failure state for this account/IP+account.
+        await reset(failRules)
 
         // Return only safe fields — never leak passwordHash into the JWT.
         // sessionVersion is carried so the token is stamped with the version

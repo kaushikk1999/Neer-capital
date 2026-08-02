@@ -13,7 +13,8 @@
     "analyze": "ANALYZE=true next build",
     "worker": "tsx src/worker/index.ts",
     "start:web": "next start",
-    "start:worker": "npm run worker"
+    "start:worker": "npm run worker",
+    "test:unit": "node --import tsx --test 'src/**/*.test.ts'"
   },
   "prisma": {
     "seed": "node prisma/seed.mjs"

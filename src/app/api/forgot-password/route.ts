@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server"
 import crypto from "crypto"
 import { Resend } from "resend"
 import { prisma } from "@/lib/db"
+import { getClientIp } from "@/lib/security/client-ip"
+import { consume, RateLimiterUnavailable, tooManyRequests, limiterUnavailableResponse, logRateEvent } from "@/lib/security/rate-limit"
+import { POLICY } from "@/lib/security/rate-limit-policy"
 
 export const runtime = "nodejs"
 
@@ -13,6 +16,23 @@ export async function POST(req: NextRequest) {
   // Always return ok to avoid account enumeration.
   const ok = NextResponse.json({ ok: true })
   if (!/^[^\s@]+@[^\s@]+\.[A-Za-z]{2,}$/.test(email)) return ok
+
+  // Rate limit BEFORE any token creation or email send. The account/cooldown
+  // dimensions apply to every submitted address (existent or not), so a 429
+  // never reveals whether the account exists.
+  const ip = getClientIp(req.headers) ?? "noip"
+  try {
+    const gate = await consume([
+      { namespace: "forgot:ip", id: ip, ...POLICY.forgot.ip },
+      { namespace: "forgot:account", id: email, ...POLICY.forgot.account },
+      { namespace: "forgot:ipaccount", id: `${ip}|${email}`, ...POLICY.forgot.ipAccount },
+      { namespace: "forgot:cooldown", id: email, ...POLICY.forgot.cooldown },
+    ])
+    if (!gate.ok) { logRateEvent("rate_limited", "forgot"); return tooManyRequests(gate.retryAfterSec) }
+  } catch (e) {
+    if (e instanceof RateLimiterUnavailable) { logRateEvent("limiter_unavailable", "forgot"); return limiterUnavailableResponse() }
+    return limiterUnavailableResponse()
+  }
 
   const user = await prisma.user.findUnique({ where: { email } })
   const apiKey = process.env.RESEND_API_KEY

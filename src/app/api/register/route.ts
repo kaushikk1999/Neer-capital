@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/db';
 import { createEmailVerificationToken, sendVerificationEmail } from '@/lib/security/email-verification';
+import { getClientIp } from '@/lib/security/client-ip';
+import { consume, RateLimiterUnavailable, tooManyRequests, limiterUnavailableResponse, logRateEvent } from '@/lib/security/rate-limit';
+import { POLICY } from '@/lib/security/rate-limit-policy';
 
 export const runtime = 'nodejs';
 
@@ -20,6 +23,26 @@ export async function POST(req: NextRequest) {
   if (!name || name.length < 2) return NextResponse.json({ error: 'Please enter your name.' }, { status: 422 });
   if (!/^[^\s@]+@[^\s@]+\.[A-Za-z]{2,}$/.test(email)) return NextResponse.json({ error: 'Please enter a valid email address.' }, { status: 422 });
   if (password.length < 8) return NextResponse.json({ error: 'Password must be at least 8 characters.' }, { status: 422 });
+
+  // Rate limit BEFORE any DB write, bcrypt, or verification email. Layered:
+  // per-IP, per-IP+email (email alone cannot bypass the IP cap), and a
+  // supplemental spoofable device signal scoped to the IP.
+  const ip = getClientIp(req.headers) ?? 'noip';
+  const device = `${req.headers.get('user-agent') ?? ''}|${req.headers.get('accept-language') ?? ''}`;
+  try {
+    const gate = await consume([
+      { namespace: 'register:ip', id: ip, ...POLICY.register.ip },
+      { namespace: 'register:ipemail', id: `${ip}|${email}`, ...POLICY.register.ipEmail },
+      { namespace: 'register:deviceip', id: `${ip}|${device}`, ...POLICY.register.deviceIp },
+    ]);
+    if (!gate.ok) {
+      logRateEvent('rate_limited', 'register');
+      return tooManyRequests(gate.retryAfterSec);
+    }
+  } catch (e) {
+    if (e instanceof RateLimiterUnavailable) { logRateEvent('limiter_unavailable', 'register'); return limiterUnavailableResponse(); }
+    return limiterUnavailableResponse();
+  }
 
   try {
     const existing = await prisma.user.findUnique({ where: { email } });
