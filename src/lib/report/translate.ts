@@ -59,41 +59,51 @@ function parseJsonObject(content: string): Record<string, unknown> | null {
  * Translate a flat map of label→English string into `locale`, preserving keys.
  * Returns the input unchanged for English, on empty input, or on any failure.
  */
+const TRANSLATE_TIMEOUT_MS = 30_000
+
 async function translateStrings(strings: Record<string, string>, locale: Locale): Promise<Record<string, string>> {
   if (locale === "en") return strings
   const entries = Object.entries(strings).filter(([, v]) => typeof v === "string" && v.trim().length > 0)
   if (entries.length === 0 || !OLLAMA_KEY) return strings
 
   const language = LANGUAGE_NAME[locale]
-  const payload = Object.fromEntries(entries)
+  // Re-key to opaque numeric ids before sending. The real field keys are long
+  // compound ids (e.g. "section.<cuid>.content") that the model tends to mangle
+  // or drop, which silently loses translations. Simple "0","1",… ids survive
+  // intact, and we map back by that id afterwards.
+  const payload: Record<string, string> = {}
+  entries.forEach(([, v], i) => { payload[String(i)] = v })
 
-  const system = `You are a professional financial translator. Translate the string VALUES of the given JSON object into ${language}.
+  const system = `You are a professional financial translator. The user sends a JSON object whose values are English text. Translate every VALUE into ${language}.
 CRITICAL RULES:
-1. Keep the JSON keys EXACTLY as given; return ONE JSON object with the same keys.
+1. Return ONE JSON object with the EXACT same keys ("0", "1", …). Include every key.
 2. Translate only natural-language prose. Do NOT alter numbers, percentages, currency symbols/codes, dates, financial units, tickers, or formulas.
 3. Keep company names, ticker symbols, and proper nouns in their original form (do not transliterate or invent).
 4. Do not add, remove, summarise, or explain. Output JSON only, no prose or code fences.`
 
   try {
-    const res = await ollama.chat({
-      model: MODEL,
-      format: "json",
-      stream: false,
-      options: { temperature: 0 },
-      messages: [
-        { role: "system", content: system },
-        { role: "user", content: JSON.stringify(payload) },
-      ],
-    })
+    const res = await Promise.race([
+      ollama.chat({
+        model: MODEL,
+        format: "json",
+        stream: false,
+        options: { temperature: 0 },
+        messages: [
+          { role: "system", content: system },
+          { role: "user", content: JSON.stringify(payload) },
+        ],
+      }),
+      new Promise<never>((_, reject) => setTimeout(() => reject(new Error("translate timeout")), TRANSLATE_TIMEOUT_MS)),
+    ])
     const parsed = parseJsonObject(res.message.content)
     if (!parsed) return strings
-    // Merge defensively: keep the English original for any key the model dropped
+    // Merge defensively: keep the English original for any id the model dropped
     // or returned as a non-string, so a partial response never blanks a field.
     const out: Record<string, string> = { ...strings }
-    for (const [k, v] of entries) {
-      const t = parsed[k]
+    entries.forEach(([k, v], i) => {
+      const t = parsed[String(i)]
       out[k] = typeof t === "string" && t.trim().length > 0 ? t : v
-    }
+    })
     return out
   } catch {
     return strings // Fail closed to the canonical English text.
