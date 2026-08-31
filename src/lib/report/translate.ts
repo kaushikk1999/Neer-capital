@@ -114,11 +114,14 @@ export function localizeReportStrings(
   strings: Record<string, string>,
   locale: Locale,
   version: TranslateVersion,
+  // Distinguishes different string sets for the same analysis (e.g. the full
+  // report page vs a compact index card) so their caches never collide.
+  scope: string = "full",
 ): Promise<Record<string, string>> {
   if (locale === "en") return Promise.resolve(strings)
   const cached = unstable_cache(
     () => translateStrings(strings, locale),
-    ["report-translation", version.analysisId, String(version.revision), locale],
+    ["report-translation", version.analysisId, String(version.revision), locale, scope],
     { revalidate: false, tags: [`report-translation:${version.analysisId}`] },
   )
   return cached()
