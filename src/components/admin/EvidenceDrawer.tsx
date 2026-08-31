@@ -99,7 +99,7 @@ export function EvidenceDrawer({
             ref={closeRef}
             type="button"
             onClick={onClose}
-            aria-label="Close"
+            aria-label={t("evidence.close")}
             className="rounded-md p-1.5 text-gray-400 transition hover:bg-white/5 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
           >
             <X className="h-5 w-5" />
