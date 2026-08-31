@@ -983,3 +983,23 @@ model RateLimitCounter {
   @@index([expiresAt])
   @@map("rate_limit_counters")
 }
+
+// Durable, cross-deployment cache of AI-translated report prose. Keyed by the
+// analysis revision so a republished report re-translates; `scope` separates
+// the full report page from the compact index card (and carries a translator
+// version so logic bumps invalidate old rows). `data` is the key->translated
+// string map the render path reads directly.
+model ReportTranslation {
+  id         String   @id @default(cuid())
+  analysisId String   @map("analysis_id")
+  revision   Int
+  locale     String
+  scope      String
+  data       Json
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@unique([analysisId, revision, locale, scope])
+  @@index([analysisId])
+  @@map("report_translations")
+}

@@ -1,5 +1,5 @@
-import { unstable_cache } from "next/cache"
 import { Ollama } from "ollama"
+import { prisma } from "@/lib/db"
 import type { Locale } from "@/lib/i18n/types"
 
 /**
@@ -148,10 +148,16 @@ export interface TranslateVersion {
 }
 
 /**
- * Localise a report's natural-language fields. Cached per (analysis revision,
- * locale) via the framework data cache; English bypasses translation entirely.
+ * Localise a report's natural-language fields, backed by a DURABLE database
+ * cache (`report_translations`) so a translation survives redeploys and is
+ * shared across replicas. English bypasses translation entirely.
+ *
+ * Flow: look up the stored row → return it on hit; otherwise translate, persist
+ * (only if it actually produced non-English output, so a transient failure is
+ * never frozen), and return. All DB access is best-effort: a database hiccup
+ * degrades to on-the-fly translation, never an error.
  */
-export function localizeReportStrings(
+export async function localizeReportStrings(
   strings: Record<string, string>,
   locale: Locale,
   version: TranslateVersion,
@@ -159,11 +165,42 @@ export function localizeReportStrings(
   // report page vs a compact index card) so their caches never collide.
   scope: string = "full",
 ): Promise<Record<string, string>> {
-  if (locale === "en") return Promise.resolve(strings)
-  const cached = unstable_cache(
-    () => translateStrings(strings, locale),
-    ["report-translation", TRANSLATOR_VERSION, version.analysisId, String(version.revision), locale, scope],
-    { revalidate: false, tags: [`report-translation:${version.analysisId}`] },
-  )
-  return cached()
+  if (locale === "en") return strings
+
+  // Version the scope so a translator-logic bump invalidates old stored rows.
+  const dbScope = `${scope}:v${TRANSLATOR_VERSION}`
+  const where = {
+    analysisId_revision_locale_scope: {
+      analysisId: version.analysisId,
+      revision: version.revision,
+      locale,
+      scope: dbScope,
+    },
+  }
+
+  try {
+    const row = await prisma.reportTranslation.findUnique({ where })
+    if (row) return row.data as Record<string, string>
+  } catch {
+    /* fall through to translate */
+  }
+
+  const translated = await translateStrings(strings, locale)
+
+  // Persist only a genuinely translated result. If nothing changed (transient
+  // model failure, or all values are proper nouns), skip so the next view can
+  // retry rather than freezing English into the durable store.
+  const changed = Object.keys(strings).some((k) => translated[k] !== strings[k])
+  if (changed) {
+    try {
+      await prisma.reportTranslation.upsert({
+        where,
+        create: { analysisId: version.analysisId, revision: version.revision, locale, scope: dbScope, data: translated },
+        update: { data: translated },
+      })
+    } catch {
+      /* best-effort persist */
+    }
+  }
+  return translated
 }
