@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
 import { createEmailVerificationToken, sendVerificationEmail } from "@/lib/security/email-verification"
+import { normalizeLocale } from "@/lib/i18n/server"
 
 export const runtime = "nodejs"
 
@@ -21,6 +22,6 @@ export async function POST(req: NextRequest) {
   if (!user || !user.passwordHash || user.emailVerified) return ok
 
   const rawToken = await createEmailVerificationToken(email)
-  await sendVerificationEmail(email, rawToken)
+  await sendVerificationEmail(email, rawToken, normalizeLocale(req.cookies.get("neer_lang")?.value))
   return ok
 }

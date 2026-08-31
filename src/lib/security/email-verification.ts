@@ -1,6 +1,8 @@
 import crypto from "crypto"
 import { Resend } from "resend"
 import { prisma } from "@/lib/db"
+import { serverT } from "@/lib/i18n/server"
+import type { Locale } from "@/lib/i18n/types"
 
 // Email-ownership verification for credentials accounts.
 //
@@ -56,20 +58,21 @@ export async function consumeEmailVerificationToken(email: string, rawToken: str
 /** Send the verification email. Returns whether the provider accepted it; the
  *  raw token is never logged. Callers must not reveal delivery state to clients
  *  in a way that enables account enumeration. */
-export async function sendVerificationEmail(email: string, rawToken: string): Promise<boolean> {
+export async function sendVerificationEmail(email: string, rawToken: string, locale: Locale = "en"): Promise<boolean> {
   const apiKey = process.env.RESEND_API_KEY
   if (!apiKey) return false
 
   const site = process.env.AUTH_URL || process.env.NEXT_PUBLIC_SITE_URL || ""
   const link = `${site}/verify-email?token=${rawToken}&email=${encodeURIComponent(email)}`
+  const t = serverT(locale)
   try {
     const { error } = await new Resend(apiKey).emails.send({
       from: process.env.CONTACT_FROM || "Neer <onboarding@resend.dev>",
       to: email,
-      subject: "Verify your Neer Capital email",
-      html: `<p>Confirm your email to finish setting up your Neer Capital account.</p>
-<p><a href="${link}">Verify my email</a> (valid for 1 hour).</p>
-<p>If you did not create this account, do not verify it — you can safely ignore this email, and if the address is yours you can reset the password from the sign-in page.</p>`,
+      subject: t("email.verify.subject"),
+      html: `<p>${t("email.verify.p1")}</p>
+<p><a href="${link}">${t("email.verify.link")}</a> ${t("email.verify.validity")}.</p>
+<p>${t("email.verify.ignore")}</p>`,
     })
     if (error) {
       console.error("[verify-email] Resend error:", JSON.stringify(error))

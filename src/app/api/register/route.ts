@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/db';
 import { createEmailVerificationToken, sendVerificationEmail } from '@/lib/security/email-verification';
+import { normalizeLocale } from '@/lib/i18n/server';
 import { getClientIp } from '@/lib/security/client-ip';
 import { consume, RateLimiterUnavailable, tooManyRequests, limiterUnavailableResponse, logRateEvent } from '@/lib/security/rate-limit';
 import { POLICY } from '@/lib/security/rate-limit-policy';
@@ -56,7 +57,7 @@ export async function POST(req: NextRequest) {
     // Issue and send a verification link. Delivery failures are not surfaced to
     // the client (no enumeration, no false "sent" claim); the user can resend.
     const rawToken = await createEmailVerificationToken(email);
-    await sendVerificationEmail(email, rawToken);
+    await sendVerificationEmail(email, rawToken, normalizeLocale(req.cookies.get('neer_lang')?.value));
 
     return NextResponse.json({ ok: true, verificationRequired: true });
   } catch {

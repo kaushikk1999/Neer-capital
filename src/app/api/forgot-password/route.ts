@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db"
 import { getClientIp } from "@/lib/security/client-ip"
 import { consume, RateLimiterUnavailable, tooManyRequests, limiterUnavailableResponse, logRateEvent } from "@/lib/security/rate-limit"
 import { POLICY } from "@/lib/security/rate-limit-policy"
+import { serverT, normalizeLocale } from "@/lib/i18n/server"
 
 export const runtime = "nodejs"
 
@@ -45,14 +46,15 @@ export async function POST(req: NextRequest) {
 
   const site = process.env.AUTH_URL || process.env.NEXT_PUBLIC_SITE_URL || new URL(req.url).origin
   const link = `${site}/reset-password?token=${token}&email=${encodeURIComponent(email)}`
+  const t = serverT(normalizeLocale(req.cookies.get("neer_lang")?.value))
   try {
     const { data, error } = await new Resend(apiKey).emails.send({
       from: process.env.CONTACT_FROM || "Neer <onboarding@resend.dev>",
       to: email,
-      subject: "Reset your Neer Capital password",
-      html: `<p>We received a request to reset your password.</p>
-<p><a href="${link}">Click here to reset it</a> (valid for 1 hour).</p>
-<p>If you didn't request this, you can ignore this email.</p>`,
+      subject: t("email.reset.subject"),
+      html: `<p>${t("email.reset.p1")}</p>
+<p><a href="${link}">${t("email.reset.link")}</a> ${t("email.reset.validity")}.</p>
+<p>${t("email.reset.ignore")}</p>`,
     })
     // Never reveal delivery state to the caller, but log it server-side so a
     // misconfigured sender (unverified domain, bad key) is diagnosable.

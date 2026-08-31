@@ -456,4 +456,16 @@ export const en: TranslationDict = {
   'chart.noData': 'No source data available for this chart.',
   'chart.noValues': 'No values for this metric were found in the source report.',
   'chart.notDisclosed': '{n} period(s) not disclosed (shown as gaps)',
+
+  // ── Transactional emails ──
+  'email.reset.subject': 'Reset your Neer Capital password',
+  'email.reset.p1': 'We received a request to reset your password.',
+  'email.reset.link': 'Click here to reset it',
+  'email.reset.validity': '(valid for 1 hour)',
+  'email.reset.ignore': "If you didn't request this, you can ignore this email.",
+  'email.verify.subject': 'Verify your Neer Capital email',
+  'email.verify.p1': 'Confirm your email to finish setting up your Neer Capital account.',
+  'email.verify.link': 'Verify my email',
+  'email.verify.validity': '(valid for 1 hour)',
+  'email.verify.ignore': 'If you did not create this account, do not verify it — you can safely ignore this email, and if the address is yours you can reset the password from the sign-in page.',
 };
