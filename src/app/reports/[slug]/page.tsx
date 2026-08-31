@@ -176,10 +176,10 @@ export default async function ReportPage({ params }: { params: { slug: string } 
               {analysis.sections.map((section) => (
                 <div key={section.id} className="group flex flex-col md:flex-row gap-8 items-start p-8 rounded-3xl bg-white/[0.01] hover:bg-white/[0.03] border border-transparent hover:border-white/[0.05] transition-all duration-300">
                   <div className="md:w-1/3 shrink-0">
-                    <h4 className="text-xl font-semibold text-white group-hover:text-blue-400 transition-colors">{section.heading}</h4>
+                    <h4 className="text-xl font-semibold text-white group-hover:text-blue-400 transition-colors">{tr(`section.${section.id}.heading`, section.heading)}</h4>
                   </div>
                   <div className="md:w-2/3 space-y-4">
-                    <p className="text-gray-300 leading-relaxed whitespace-pre-wrap">{section.content}</p>
+                    <p className="text-gray-300 leading-relaxed whitespace-pre-wrap">{tr(`section.${section.id}.content`, section.content)}</p>
                     {section.sourceExcerpt && (
                       <blockquote className="pl-4 border-l-2 border-blue-500/30 text-sm text-gray-500 italic">
                         &quot;{section.sourceExcerpt}&quot;
@@ -202,10 +202,10 @@ export default async function ReportPage({ params }: { params: { slug: string } 
             <div className="prose prose-invert prose-red max-w-none">
               {typeof analysis.risks === 'string' ? (
                 <ul className="space-y-6 text-gray-300 list-none pl-0">
-                  {JSON.parse(analysis.risks).map((risk: any, i: number) => (
+                  {risks.map((risk, i) => (
                     <li key={i} className="pl-4 border-l border-red-500/30">
-                      <strong className="text-white block mb-1 text-lg">{risk.risk}</strong>
-                      <span className="text-gray-400 block mb-3 leading-relaxed">{risk.explanation}</span>
+                      <strong className="text-white block mb-1 text-lg">{risk.risk ? tr(`risk.${i}.risk`, risk.risk) : ""}</strong>
+                      <span className="text-gray-400 block mb-3 leading-relaxed">{risk.explanation ? tr(`risk.${i}.explanation`, risk.explanation) : ""}</span>
                       <em className="text-xs text-red-400/70 bg-red-950/50 px-2 py-1 rounded inline-block">{t("report.source")} &quot;{risk.evidence}&quot;</em>
                     </li>
                   ))}
