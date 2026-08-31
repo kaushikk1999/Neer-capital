@@ -430,12 +430,7 @@ export const en: TranslationDict = {
 
   // ── Report chart ──
   'chart.notAvailable': 'Not available',
-  'chart.period': 'Period',
-  'chart.value': 'Value',
-  'chart.basis': 'Basis',
   'chart.confidence': 'Confidence',
-  'chart.viewTable': 'View data table',
-  'chart.hideTable': 'Hide data table',
   'chart.forecast': 'Forecast',
   'chart.reported': 'Reported',
   'chart.forecastBegins': 'Forecast begins',

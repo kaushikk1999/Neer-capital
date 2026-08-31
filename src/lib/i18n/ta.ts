@@ -429,12 +429,7 @@ export const ta: TranslationDict = {
 
   // ── Report chart ──
   'chart.notAvailable': 'கிடைக்கவில்லை',
-  'chart.period': 'காலம்',
-  'chart.value': 'மதிப்பு',
-  'chart.basis': 'அடிப்படை',
   'chart.confidence': 'நம்பகத்தன்மை',
-  'chart.viewTable': 'தரவு அட்டவணையைப் பார்க்கவும்',
-  'chart.hideTable': 'தரவு அட்டவணையை மறை',
   'chart.forecast': 'முன்னறிவிப்பு',
   'chart.reported': 'அறிக்கையிடப்பட்டது',
   'chart.forecastBegins': 'முன்னறிவிப்பு தொடங்குகிறது',

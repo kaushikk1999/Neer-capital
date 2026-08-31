@@ -429,12 +429,7 @@ export const hi: TranslationDict = {
 
   // ── Report chart ──
   'chart.notAvailable': 'उपलब्ध नहीं',
-  'chart.period': 'अवधि',
-  'chart.value': 'मूल्य',
-  'chart.basis': 'आधार',
   'chart.confidence': 'विश्वास स्तर',
-  'chart.viewTable': 'डेटा तालिका देखें',
-  'chart.hideTable': 'डेटा तालिका छिपाएँ',
   'chart.forecast': 'पूर्वानुमान',
   'chart.reported': 'रिपोर्ट किया गया',
   'chart.forecastBegins': 'पूर्वानुमान शुरू',
