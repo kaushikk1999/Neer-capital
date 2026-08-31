@@ -17,7 +17,6 @@ import {
 } from "recharts"
 import type { ChartV2Config, ChartV2Point, ClassificationCodeT } from "@/lib/report/types"
 import { isForecastCode } from "@/lib/report/types"
-import { NOT_FOUND_IN_SOURCE } from "@/lib/finance/normalize"
 import { useLanguage } from "@/lib/i18n/LanguageContext"
 
 /**
@@ -55,26 +54,17 @@ interface ChartRow {
 // we do not actually have — legacy charts stamp them as placeholders — so they
 // resolve to the localized "Not available" instead of leaking raw internal
 // tokens ("Unclassified", "unverified") that read as a real assessment.
-const CLASSIFICATION_LABEL: Record<string, string> = {
-  A: "Actual",
-  R: "Restated",
-  P: "Preliminary",
-  G: "Management guidance",
-  E: "Analyst estimate",
-  C: "Consensus estimate",
-  S: "Scenario",
-  AI: "Platform derived",
-}
+const CLASS_CODES = new Set(["A", "R", "P", "G", "E", "C", "S", "AI"])
+const CONF_LEVELS = new Set(["HIGH", "MEDIUM", "LOW", "CONFLICTING"])
 
-const CONFIDENCE_LABEL: Record<string, string> = {
-  HIGH: "High",
-  MEDIUM: "Medium",
-  LOW: "Low",
-  CONFLICTING: "Conflicting",
-}
-
-const classificationLabel = (code: string, na: string): string => CLASSIFICATION_LABEL[code] ?? na
-const confidenceLabel = (level: string, na: string): string => CONFIDENCE_LABEL[level] ?? na
+type Translate = (key: string) => string
+// Known codes/levels resolve to a localized label via the shared i18n
+// dictionaries; unknown/placeholder ones (classification "U"; confidence
+// "UNVERIFIED"/"MISSING") resolve to the localized `na` ("Not available").
+const classificationLabel = (code: string, t: Translate, na: string): string =>
+  CLASS_CODES.has(code) ? t(`chart.class.${code}`) : na
+const confidenceLabel = (level: string, t: Translate, na: string): string =>
+  CONF_LEVELS.has(level) ? t(`chart.conf.${level}`) : na
 
 /** Legacy configs carry no classification, so nothing may be claimed as forecast. */
 function adaptLegacy(config: LegacyConfig, seriesName: string): ChartV2Config | null {
@@ -128,8 +118,8 @@ function toRows(points: ChartV2Point[]): ChartRow[] {
   })
 }
 
-function formatValue(v: number | null, config: ChartV2Config): string {
-  if (v == null) return NOT_FOUND_IN_SOURCE
+function formatValue(v: number | null, config: ChartV2Config, na: string): string {
+  if (v == null) return na
   const scale = config.scale ? ` ${config.scale === "crore" ? "cr" : config.scale}` : ""
   return `${v.toLocaleString()}${scale}`
 }
@@ -150,12 +140,12 @@ function ChartTooltip({
   return (
     <div className="rounded-lg border border-white/15 bg-[#0b1220] px-3 py-2 text-xs shadow-xl">
       <p className="font-semibold text-white">{row.period}</p>
-      <p className={row.missing ? "text-amber-300" : "text-gray-200"}>{formatValue(row.value, config)}</p>
+      <p className={row.missing ? "text-amber-300" : "text-gray-200"}>{formatValue(row.value, config, na)}</p>
       <p className="mt-1 text-gray-400">
-        {classificationLabel(row.classificationCode, na)}
-        {row.isForecast ? " · forecast" : ""}
+        {classificationLabel(row.classificationCode, t, na)}
+        {row.isForecast ? ` · ${t("chart.forecast").toLowerCase()}` : ""}
       </p>
-      <p className="text-gray-500">Confidence: {confidenceLabel(row.confidence, na)}</p>
+      <p className="text-gray-500">{t("chart.confidence")}: {confidenceLabel(row.confidence, t, na)}</p>
     </div>
   )
 }
@@ -181,7 +171,7 @@ export default function ReportChart({ chart }: { chart: { type?: string; title: 
     return (
       <figure className="w-full rounded-3xl border border-white/[0.05] bg-white/[0.02] p-6 md:p-8">
         <figcaption className="mb-2 text-center text-xl font-semibold text-white">{chart.title}</figcaption>
-        <p className="py-10 text-center text-sm text-gray-400">No source data available for this chart.</p>
+        <p className="py-10 text-center text-sm text-gray-400">{t("chart.noData")}</p>
       </figure>
     )
   }
@@ -192,10 +182,10 @@ export default function ReportChart({ chart }: { chart: { type?: string; title: 
       <figure className="w-full rounded-3xl border border-white/[0.05] bg-white/[0.02] p-6 md:p-8">
         <figcaption className="mb-2 text-center text-xl font-semibold text-white">{chart.title}</figcaption>
         <p className="py-10 text-center text-sm text-amber-300">
-          No values for this metric were found in the source report.
+          {t("chart.noValues")}
         </p>
         <p className="text-center text-xs text-gray-500">
-          Periods identified: {rows.map((r) => r.period).join(", ")}
+          {t("chart.periodsIdentified")} {rows.map((r) => r.period).join(", ")}
         </p>
       </figure>
     )
@@ -207,8 +197,8 @@ export default function ReportChart({ chart }: { chart: { type?: string; title: 
     <figure className="w-full rounded-3xl border border-white/[0.05] bg-white/[0.02] p-6 md:p-8">
       <figcaption className="mb-1 text-center text-xl font-semibold text-white">{chart.title}</figcaption>
       <p className="mb-4 text-center text-xs text-gray-500">
-        Solid = reported · dashed = forecast
-        {missingCount > 0 ? ` · ${missingCount} period${missingCount > 1 ? "s" : ""} not disclosed (shown as gaps)` : ""}
+        {t("chart.legendHint")}
+        {missingCount > 0 ? ` · ${t("chart.notDisclosed").replace("{n}", String(missingCount))}` : ""}
       </p>
 
       <div className="h-[300px] w-full">
@@ -220,8 +210,8 @@ export default function ReportChart({ chart }: { chart: { type?: string; title: 
               <YAxis stroke="#9ca3af" fontSize={12} />
               <Tooltip content={<ChartTooltip config={config} />} cursor={{ fill: "rgba(255,255,255,0.05)" }} />
               <Legend />
-              <Bar dataKey="actual" name="Reported" fill="#60a5fa" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="forecast" name="Forecast" fill="#60a5fa" fillOpacity={0.35} radius={[4, 4, 0, 0]} />
+              <Bar dataKey="actual" name={t("chart.reported")} fill="#60a5fa" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="forecast" name={t("chart.forecast")} fill="#60a5fa" fillOpacity={0.35} radius={[4, 4, 0, 0]} />
             </BarChart>
           ) : (
             <ComposedChart data={rows}>
@@ -242,7 +232,7 @@ export default function ReportChart({ chart }: { chart: { type?: string; title: 
                     x={rows[firstForecast].period}
                     stroke="#f59e0b"
                     strokeDasharray="4 4"
-                    label={{ value: "Forecast begins", position: "insideTopRight", fill: "#f59e0b", fontSize: 11 }}
+                    label={{ value: t("chart.forecastBegins"), position: "insideTopRight", fill: "#f59e0b", fontSize: 11 }}
                   />
                 </>
               )}
@@ -250,7 +240,7 @@ export default function ReportChart({ chart }: { chart: { type?: string; title: 
               <Line
                 type="monotone"
                 dataKey="actual"
-                name="Reported"
+                name={t("chart.reported")}
                 stroke="#60a5fa"
                 strokeWidth={2}
                 connectNulls={false}
@@ -259,7 +249,7 @@ export default function ReportChart({ chart }: { chart: { type?: string; title: 
               <Line
                 type="monotone"
                 dataKey="forecast"
-                name="Forecast"
+                name={t("chart.forecast")}
                 stroke="#f59e0b"
                 strokeWidth={2}
                 strokeDasharray="6 4"
@@ -278,7 +268,7 @@ export default function ReportChart({ chart }: { chart: { type?: string; title: 
           aria-expanded={showTable}
           className="rounded-md px-3 py-1.5 text-xs text-gray-300 underline underline-offset-4 transition hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
         >
-          {showTable ? "Hide data table" : "View data table"}
+          {showTable ? t("chart.hideTable") : t("chart.viewTable")}
         </button>
       </div>
 
@@ -288,10 +278,10 @@ export default function ReportChart({ chart }: { chart: { type?: string; title: 
             <caption className="sr-only">{chart.title} — underlying data</caption>
             <thead>
               <tr className="border-b border-white/10 text-gray-400">
-                <th scope="col" className="py-2 pr-4 font-medium">Period</th>
-                <th scope="col" className="py-2 pr-4 font-medium">Value</th>
-                <th scope="col" className="py-2 pr-4 font-medium">Basis</th>
-                <th scope="col" className="py-2 font-medium">Confidence</th>
+                <th scope="col" className="py-2 pr-4 font-medium">{t("chart.period")}</th>
+                <th scope="col" className="py-2 pr-4 font-medium">{t("chart.value")}</th>
+                <th scope="col" className="py-2 pr-4 font-medium">{t("chart.basis")}</th>
+                <th scope="col" className="py-2 font-medium">{t("chart.confidence")}</th>
               </tr>
             </thead>
             <tbody>
@@ -299,12 +289,12 @@ export default function ReportChart({ chart }: { chart: { type?: string; title: 
                 <tr key={r.period} className="border-b border-white/5">
                   <th scope="row" className="py-2 pr-4 font-normal text-gray-300">{r.period}</th>
                   <td className={`py-2 pr-4 ${r.missing ? "text-amber-300" : "text-gray-200"}`}>
-                    {formatValue(r.value, config)}
+                    {formatValue(r.value, config, na)}
                   </td>
                   <td className="py-2 pr-4 text-gray-400">
-                    {classificationLabel(r.classificationCode, na)}
+                    {classificationLabel(r.classificationCode, t, na)}
                   </td>
-                  <td className="py-2 text-gray-500">{confidenceLabel(r.confidence, na)}</td>
+                  <td className="py-2 text-gray-500">{confidenceLabel(r.confidence, t, na)}</td>
                 </tr>
               ))}
             </tbody>

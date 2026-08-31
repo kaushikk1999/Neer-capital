@@ -6,10 +6,23 @@ import ReportChart from "@/components/charts/ReportChart"
 import { FeedbackPrompt } from "@/components/reports/FeedbackPrompt"
 import { localizeReportStrings } from "@/lib/report/translate"
 import type { Locale } from "@/lib/i18n/types"
+import { en } from "@/lib/i18n/en"
+import { hi } from "@/lib/i18n/hi"
+import { ta } from "@/lib/i18n/ta"
+
+const DICT: Record<Locale, Record<string, string>> = { en, hi, ta }
 
 function readLocale(): Locale {
   const v = cookies().get("neer_lang")?.value
   return v === "hi" || v === "ta" ? v : "en"
+}
+
+/** Server-side translation for static chrome. The useLanguage() hook is
+ *  client-only, so this server component reads the same dictionaries directly,
+ *  keyed by the neer_lang cookie the language switcher sets. */
+function makeT(locale: Locale) {
+  const dict = DICT[locale] ?? en
+  return (key: string) => dict[key] ?? en[key] ?? key
 }
 
 async function getReport(slug: string) {
@@ -40,6 +53,7 @@ export default async function ReportPage({ params }: { params: { slug: string } 
     
   const analysis = doc.publishedAnalysis!
   const locale = readLocale()
+  const t = makeT(locale)
 
   // Parse risks once (stored as a JSON string array of {risk, explanation, evidence}).
   type RiskItem = { risk?: string; explanation?: string; evidence?: string }
@@ -102,7 +116,7 @@ export default async function ReportPage({ params }: { params: { slug: string } 
             className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 transition-all shrink-0 text-sm font-medium hover:scale-105 active:scale-95"
           >
             <FileText className="w-4 h-4" />
-            View Original PDF
+            {t("report.viewPdf")}
           </a>
         </header>
 
@@ -112,9 +126,9 @@ export default async function ReportPage({ params }: { params: { slug: string } 
         <div className="mb-16">
           <div className="space-y-4 p-8 rounded-3xl bg-white/[0.02] border border-white/[0.05] backdrop-blur-xl relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-blue-500/10 transition-colors duration-500" />
-            <h2 className="text-sm font-medium text-gray-400 uppercase tracking-widest">Executive Summary</h2>
+            <h2 className="text-sm font-medium text-gray-400 uppercase tracking-widest">{t("report.executiveSummary")}</h2>
             <p className="text-lg md:text-xl leading-relaxed text-gray-200 whitespace-pre-wrap">
-              {analysis.summary ? tr("summary", analysis.summary) : "No executive summary available."}
+              {analysis.summary ? tr("summary", analysis.summary) : t("report.noSummary")}
             </p>
           </div>
         </div>
@@ -123,7 +137,7 @@ export default async function ReportPage({ params }: { params: { slug: string } 
         {analysis.metrics.length > 0 && (
           <section className="mb-20">
             <h3 className="text-2xl font-semibold mb-8 flex items-center gap-3">
-              <TrendingUp className="w-6 h-6 text-blue-400" /> Key Metrics
+              <TrendingUp className="w-6 h-6 text-blue-400" /> {t("report.keyMetrics")}
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {analysis.metrics.map((metric) => (
@@ -145,7 +159,7 @@ export default async function ReportPage({ params }: { params: { slug: string } 
         {analysis.charts.length > 0 && (
           <section className="mb-20">
             <h3 className="text-2xl font-semibold mb-8 flex items-center gap-3">
-              <BarChart3 className="w-6 h-6 text-blue-400" /> Visualizations
+              <BarChart3 className="w-6 h-6 text-blue-400" /> {t("report.visualizations")}
             </h3>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {analysis.charts.map((chart) => (
@@ -183,7 +197,7 @@ export default async function ReportPage({ params }: { params: { slug: string } 
           <section className="mb-20 p-8 md:p-12 rounded-3xl bg-red-950/20 border border-red-500/20 relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-r from-red-500/5 to-transparent pointer-events-none" />
             <h3 className="text-2xl font-semibold text-red-400 mb-8 flex items-center gap-3">
-              <AlertTriangle className="w-6 h-6" /> Key Risks
+              <AlertTriangle className="w-6 h-6" /> {t("report.keyRisks")}
             </h3>
             <div className="prose prose-invert prose-red max-w-none">
               {typeof analysis.risks === 'string' ? (
@@ -192,12 +206,12 @@ export default async function ReportPage({ params }: { params: { slug: string } 
                     <li key={i} className="pl-4 border-l border-red-500/30">
                       <strong className="text-white block mb-1 text-lg">{risk.risk}</strong>
                       <span className="text-gray-400 block mb-3 leading-relaxed">{risk.explanation}</span>
-                      <em className="text-xs text-red-400/70 bg-red-950/50 px-2 py-1 rounded inline-block">Source: &quot;{risk.evidence}&quot;</em>
+                      <em className="text-xs text-red-400/70 bg-red-950/50 px-2 py-1 rounded inline-block">{t("report.source")} &quot;{risk.evidence}&quot;</em>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="text-gray-400">No risks identified.</p>
+                <p className="text-gray-400">{t("report.noRisks")}</p>
               )}
             </div>
           </section>
