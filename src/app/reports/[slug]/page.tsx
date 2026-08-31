@@ -5,6 +5,7 @@ import { FileText, Activity, AlertTriangle, TrendingUp, BarChart3 } from "lucide
 import ReportChart from "@/components/charts/ReportChart"
 import { FeedbackPrompt } from "@/components/reports/FeedbackPrompt"
 import { localizeReportStrings } from "@/lib/report/translate"
+import { buildReportStrings, parseRisks } from "@/lib/report/report-fields"
 import type { Locale } from "@/lib/i18n/types"
 import { en } from "@/lib/i18n/en"
 import { hi } from "@/lib/i18n/hi"
@@ -55,29 +56,18 @@ export default async function ReportPage({ params }: { params: { slug: string } 
   const locale = readLocale()
   const t = makeT(locale)
 
-  // Parse risks once (stored as a JSON string array of {risk, explanation, evidence}).
-  type RiskItem = { risk?: string; explanation?: string; evidence?: string }
-  let risks: RiskItem[] = []
-  if (typeof analysis.risks === "string") {
-    try { risks = JSON.parse(analysis.risks) as RiskItem[] } catch { risks = [] }
-  }
-
-  // Collect every natural-language field rendered on this page into one keyed
-  // map, then localise them in a single cached model call. Numbers, tickers,
-  // currencies, dates, units and verbatim source excerpts are NOT included and
-  // stay exactly as extracted. English short-circuits (no model call).
-  const strings: Record<string, string> = {}
-  if (doc.title) strings["title"] = doc.title
-  if (analysis.summary) strings["summary"] = analysis.summary
-  analysis.metrics.forEach((m) => { if (m.label) strings[`metric.${m.id}.label`] = m.label })
-  analysis.sections.forEach((s) => {
-    if (s.heading) strings[`section.${s.id}.heading`] = s.heading
-    if (s.content) strings[`section.${s.id}.content`] = s.content
-  })
-  analysis.charts.forEach((c) => { if (c.title) strings[`chart.${c.id}.title`] = c.title })
-  risks.forEach((r, i) => {
-    if (r.risk) strings[`risk.${i}.risk`] = r.risk
-    if (r.explanation) strings[`risk.${i}.explanation`] = r.explanation
+  // Parse risks once and collect every prose field into one keyed map (shared
+  // with the publish-time pre-warm so cache keys match), then localise in a
+  // single cached model call. Numbers, tickers, currencies, dates, units and
+  // verbatim source excerpts stay as extracted. English short-circuits.
+  const risks = parseRisks(analysis.risks)
+  const strings = buildReportStrings({
+    title: doc.title,
+    summary: analysis.summary,
+    metrics: analysis.metrics,
+    sections: analysis.sections,
+    charts: analysis.charts,
+    risks,
   })
 
   const L = await localizeReportStrings(strings, locale, {

@@ -2,6 +2,7 @@ import { cookies } from "next/headers"
 import { prisma } from "@/lib/db"
 import { ReportsIndex, type ReportCard } from "@/components/reports/ReportsIndex"
 import { localizeReportStrings } from "@/lib/report/translate"
+import { buildCardStrings } from "@/lib/report/report-fields"
 import type { Locale } from "@/lib/i18n/types"
 
 export const metadata = { title: "Research Reports | Neer Capital" }
@@ -33,10 +34,8 @@ export default async function ReportsIndexPage() {
       let title = doc.title
       let localizedSummary = summary
       if (analysis && locale !== "en") {
-        const src: Record<string, string> = { title: doc.title }
-        if (summary) src.summary = summary
         const L = await localizeReportStrings(
-          src,
+          buildCardStrings(doc.title, summary),
           locale,
           { analysisId: analysis.id, revision: analysis.revision },
           "card",
