@@ -60,31 +60,32 @@ function parseJsonObject(content: string): Record<string, unknown> | null {
  * Returns the input unchanged for English, on empty input, or on any failure.
  */
 const TRANSLATE_TIMEOUT_MS = 30_000
+// Small batches: one big call can non-deterministically drop a subset of fields
+// (a frozen partial). Chunking bounds each call so a hiccup loses at most one
+// batch (which falls back to English), never scattered fields across the report.
+const TRANSLATE_BATCH = 8
 
 // Bump when the translation logic/prompt changes so previously cached results
 // (which may have been produced by older, less reliable logic) are invalidated.
-const TRANSLATOR_VERSION = "2"
+const TRANSLATOR_VERSION = "3"
 
-async function translateStrings(strings: Record<string, string>, locale: Locale): Promise<Record<string, string>> {
-  if (locale === "en") return strings
-  const entries = Object.entries(strings).filter(([, v]) => typeof v === "string" && v.trim().length > 0)
-  if (entries.length === 0 || !OLLAMA_KEY) return strings
-
-  const language = LANGUAGE_NAME[locale]
-  // Re-key to opaque numeric ids before sending. The real field keys are long
-  // compound ids (e.g. "section.<cuid>.content") that the model tends to mangle
-  // or drop, which silently loses translations. Simple "0","1",… ids survive
-  // intact, and we map back by that id afterwards.
+/** Translate one batch of [key, englishValue] pairs; returns key→translated.
+ *  Any failure/omission leaves that key's English original in place. */
+async function translateBatch(batch: [string, string][], language: string): Promise<Record<string, string>> {
+  // Opaque numeric ids: the real field keys are long compound ids
+  // (e.g. "section.<cuid>.content") the model tends to mangle or drop; "0","1",…
+  // survive intact and we map back by position.
   const payload: Record<string, string> = {}
-  entries.forEach(([, v], i) => { payload[String(i)] = v })
+  batch.forEach(([, v], i) => { payload[String(i)] = v })
 
-  const system = `You are a professional financial translator. The user sends a JSON object whose values are English text. Translate every VALUE into ${language}.
+  const system = `You are a professional financial translator. The user sends a JSON object whose values are English UI text and prose from an equity research report. Translate EVERY value into ${language}, INCLUDING short field labels such as "Market Cap", "Book Value", "Operating Income", "Profit After Tax".
 CRITICAL RULES:
 1. Return ONE JSON object with the EXACT same keys ("0", "1", …). Include every key.
-2. Translate only natural-language prose. Do NOT alter numbers, percentages, currency symbols/codes, dates, financial units, tickers, or formulas.
-3. Keep company names, ticker symbols, and proper nouns in their original form (do not transliterate or invent).
-4. Do not add, remove, summarise, or explain. Output JSON only, no prose or code fences.`
+2. Keep unchanged ONLY: numbers, percentages, currency symbols/codes, dates, financial units, formulas, pure acronyms (e.g. EBITDA, EPS, CAGR, PAT), ticker symbols, and company/product proper names.
+3. Do not add, remove, summarise, or explain. Output JSON only, no prose or code fences.`
 
+  const out: Record<string, string> = {}
+  batch.forEach(([k, v]) => { out[k] = v }) // default to English
   try {
     const res = await Promise.race([
       ollama.chat({
@@ -100,18 +101,28 @@ CRITICAL RULES:
       new Promise<never>((_, reject) => setTimeout(() => reject(new Error("translate timeout")), TRANSLATE_TIMEOUT_MS)),
     ])
     const parsed = parseJsonObject(res.message.content)
-    if (!parsed) return strings
-    // Merge defensively: keep the English original for any id the model dropped
-    // or returned as a non-string, so a partial response never blanks a field.
-    const out: Record<string, string> = { ...strings }
-    entries.forEach(([k, v], i) => {
+    if (!parsed) return out
+    batch.forEach(([k, v], i) => {
       const t = parsed[String(i)]
       out[k] = typeof t === "string" && t.trim().length > 0 ? t : v
     })
-    return out
   } catch {
-    return strings // Fail closed to the canonical English text.
+    /* keep English defaults */
   }
+  return out
+}
+
+async function translateStrings(strings: Record<string, string>, locale: Locale): Promise<Record<string, string>> {
+  if (locale === "en") return strings
+  const entries = Object.entries(strings).filter(([, v]) => typeof v === "string" && v.trim().length > 0)
+  if (entries.length === 0 || !OLLAMA_KEY) return strings
+
+  const language = LANGUAGE_NAME[locale]
+  const batches: [string, string][][] = []
+  for (let i = 0; i < entries.length; i += TRANSLATE_BATCH) batches.push(entries.slice(i, i + TRANSLATE_BATCH))
+
+  const results = await Promise.all(batches.map((b) => translateBatch(b, language)))
+  return Object.assign({ ...strings }, ...results)
 }
 
 /** Cache key ingredients that change whenever the underlying prose changes. */
