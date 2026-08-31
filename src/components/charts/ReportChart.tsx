@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useMemo } from "react"
 import {
   ResponsiveContainer,
   ComposedChart,
@@ -152,8 +152,6 @@ function ChartTooltip({
 
 export default function ReportChart({ chart }: { chart: { type?: string; title: string; config?: unknown; configV2?: unknown } }) {
   const { t } = useLanguage()
-  const na = t("chart.notAvailable")
-  const [showTable, setShowTable] = useState(false)
 
   const config = useMemo<ChartV2Config | null>(() => {
     const v2 = chart.configV2 as ChartV2Config | null | undefined
@@ -261,46 +259,6 @@ export default function ReportChart({ chart }: { chart: { type?: string; title: 
         </ResponsiveContainer>
       </div>
 
-      <div className="mt-4 text-center">
-        <button
-          type="button"
-          onClick={() => setShowTable((v) => !v)}
-          aria-expanded={showTable}
-          className="rounded-md px-3 py-1.5 text-xs text-gray-300 underline underline-offset-4 transition hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
-        >
-          {showTable ? t("chart.hideTable") : t("chart.viewTable")}
-        </button>
-      </div>
-
-      {showTable && (
-        <div className="mt-3 overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <caption className="sr-only">{chart.title} — underlying data</caption>
-            <thead>
-              <tr className="border-b border-white/10 text-gray-400">
-                <th scope="col" className="py-2 pr-4 font-medium">{t("chart.period")}</th>
-                <th scope="col" className="py-2 pr-4 font-medium">{t("chart.value")}</th>
-                <th scope="col" className="py-2 pr-4 font-medium">{t("chart.basis")}</th>
-                <th scope="col" className="py-2 font-medium">{t("chart.confidence")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r) => (
-                <tr key={r.period} className="border-b border-white/5">
-                  <th scope="row" className="py-2 pr-4 font-normal text-gray-300">{r.period}</th>
-                  <td className={`py-2 pr-4 ${r.missing ? "text-amber-300" : "text-gray-200"}`}>
-                    {formatValue(r.value, config, na)}
-                  </td>
-                  <td className="py-2 pr-4 text-gray-400">
-                    {classificationLabel(r.classificationCode, t, na)}
-                  </td>
-                  <td className="py-2 text-gray-500">{confidenceLabel(r.confidence, t, na)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
     </figure>
   )
 }
