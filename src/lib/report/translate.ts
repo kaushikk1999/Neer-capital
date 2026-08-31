@@ -61,6 +61,10 @@ function parseJsonObject(content: string): Record<string, unknown> | null {
  */
 const TRANSLATE_TIMEOUT_MS = 30_000
 
+// Bump when the translation logic/prompt changes so previously cached results
+// (which may have been produced by older, less reliable logic) are invalidated.
+const TRANSLATOR_VERSION = "2"
+
 async function translateStrings(strings: Record<string, string>, locale: Locale): Promise<Record<string, string>> {
   if (locale === "en") return strings
   const entries = Object.entries(strings).filter(([, v]) => typeof v === "string" && v.trim().length > 0)
@@ -131,7 +135,7 @@ export function localizeReportStrings(
   if (locale === "en") return Promise.resolve(strings)
   const cached = unstable_cache(
     () => translateStrings(strings, locale),
-    ["report-translation", version.analysisId, String(version.revision), locale, scope],
+    ["report-translation", TRANSLATOR_VERSION, version.analysisId, String(version.revision), locale, scope],
     { revalidate: false, tags: [`report-translation:${version.analysisId}`] },
   )
   return cached()
