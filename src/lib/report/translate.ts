@@ -67,7 +67,13 @@ const TRANSLATE_BATCH = 8
 
 // Bump when the translation logic/prompt changes so previously cached results
 // (which may have been produced by older, less reliable logic) are invalidated.
-const TRANSLATOR_VERSION = "3"
+const TRANSLATOR_VERSION = "4"
+
+// A value the model legitimately keeps as-is: pure acronym / ticker / numeric /
+// symbol token (e.g. "EBITDA", "EPS", "GRSE"). Such a field being unchanged is
+// correct, so it must NOT trigger a retry. Anything with a lowercase letter is
+// treated as prose that should have been translated.
+const looksTranslatable = (v: string): boolean => /[a-z]/.test(v)
 
 /** Translate one batch of [key, englishValue] pairs; returns key→translated.
  *  Any failure/omission leaves that key's English original in place. */
@@ -121,8 +127,18 @@ async function translateStrings(strings: Record<string, string>, locale: Locale)
   const batches: [string, string][][] = []
   for (let i = 0; i < entries.length; i += TRANSLATE_BATCH) batches.push(entries.slice(i, i + TRANSLATE_BATCH))
 
-  const results = await Promise.all(batches.map((b) => translateBatch(b, language)))
-  return Object.assign({ ...strings }, ...results)
+  const merged: Record<string, string> = Object.assign({ ...strings }, ...(await Promise.all(batches.map((b) => translateBatch(b, language)))))
+
+  // One retry pass for prose fields still equal to their English original — a
+  // batch may non-deterministically skip a few. Pure acronyms/tickers are left
+  // alone (looksTranslatable is false), so this never loops on those.
+  const missed = entries.filter(([k, v]) => merged[k] === v && looksTranslatable(v))
+  if (missed.length > 0) {
+    const retry: [string, string][][] = []
+    for (let i = 0; i < missed.length; i += TRANSLATE_BATCH) retry.push(missed.slice(i, i + TRANSLATE_BATCH))
+    Object.assign(merged, ...(await Promise.all(retry.map((b) => translateBatch(b, language)))))
+  }
+  return merged
 }
 
 /** Cache key ingredients that change whenever the underlying prose changes. */

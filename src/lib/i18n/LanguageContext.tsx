@@ -28,12 +28,12 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>('en');
-  const [mounted, setMounted] = useState(false);
+export function LanguageProvider({ children, initialLocale = 'en' }: { children: ReactNode; initialLocale?: Locale }) {
+  // Seed from the server-provided cookie value so the first client render matches
+  // the server HTML (no English flash, no hydration mismatch).
+  const [locale, setLocaleState] = useState<Locale>(initialLocale);
 
   useEffect(() => {
-    setMounted(true);
     try {
       const stored = localStorage.getItem('neer_lang') as Locale;
       if (stored && ['en', 'hi', 'ta'].includes(stored)) {
@@ -59,14 +59,15 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     writeLocaleCookie(newLocale);
   };
 
+  // `locale` is seeded from the server cookie, so it is already correct on the
+  // first render — no need to force English pre-mount (that caused the flash).
   const t = (key: string): string => {
-    if (!mounted) return en[key] || key;
     const dict = dictionaries[locale] || en;
     return dict[key] || en[key] || key;
   };
 
   return (
-    <LanguageContext.Provider value={{ locale: mounted ? locale : 'en', setLocale, t }}>
+    <LanguageContext.Provider value={{ locale, setLocale, t }}>
       {children}
     </LanguageContext.Provider>
   );
