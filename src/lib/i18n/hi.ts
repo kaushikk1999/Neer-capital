@@ -416,4 +416,7 @@ export const hi: TranslationDict = {
   'verify.resendDone': 'यदि उस खाते को सत्यापन की आवश्यकता है, तो एक नया लिंक भेजा जा रहा है।',
   'verify.checkTitle': 'अपना ईमेल जांचें',
   'verify.checkBody': 'हमने आपके ईमेल पर एक सत्यापन लिंक भेजा है। अपना खाता सक्रिय करने के लिए उस पर क्लिक करें, फिर साइन इन करें।',
+
+  // ── Report chart ──
+  'chart.notAvailable': 'उपलब्ध नहीं',
 };

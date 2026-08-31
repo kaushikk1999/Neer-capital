@@ -1,8 +1,16 @@
 import { notFound } from "next/navigation"
+import { cookies } from "next/headers"
 import { prisma } from "@/lib/db"
 import { FileText, Activity, AlertTriangle, TrendingUp, BarChart3 } from "lucide-react"
 import ReportChart from "@/components/charts/ReportChart"
 import { FeedbackPrompt } from "@/components/reports/FeedbackPrompt"
+import { localizeReportStrings } from "@/lib/report/translate"
+import type { Locale } from "@/lib/i18n/types"
+
+function readLocale(): Locale {
+  const v = cookies().get("neer_lang")?.value
+  return v === "hi" || v === "ta" ? v : "en"
+}
 
 async function getReport(slug: string) {
   const document = await prisma.document.findUnique({
@@ -31,6 +39,38 @@ export default async function ReportPage({ params }: { params: { slug: string } 
   if (!doc) notFound()
     
   const analysis = doc.publishedAnalysis!
+  const locale = readLocale()
+
+  // Parse risks once (stored as a JSON string array of {risk, explanation, evidence}).
+  type RiskItem = { risk?: string; explanation?: string; evidence?: string }
+  let risks: RiskItem[] = []
+  if (typeof analysis.risks === "string") {
+    try { risks = JSON.parse(analysis.risks) as RiskItem[] } catch { risks = [] }
+  }
+
+  // Collect every natural-language field rendered on this page into one keyed
+  // map, then localise them in a single cached model call. Numbers, tickers,
+  // currencies, dates, units and verbatim source excerpts are NOT included and
+  // stay exactly as extracted. English short-circuits (no model call).
+  const strings: Record<string, string> = {}
+  if (doc.title) strings["title"] = doc.title
+  if (analysis.summary) strings["summary"] = analysis.summary
+  analysis.metrics.forEach((m) => { if (m.label) strings[`metric.${m.id}.label`] = m.label })
+  analysis.sections.forEach((s) => {
+    if (s.heading) strings[`section.${s.id}.heading`] = s.heading
+    if (s.content) strings[`section.${s.id}.content`] = s.content
+  })
+  analysis.charts.forEach((c) => { if (c.title) strings[`chart.${c.id}.title`] = c.title })
+  risks.forEach((r, i) => {
+    if (r.risk) strings[`risk.${i}.risk`] = r.risk
+    if (r.explanation) strings[`risk.${i}.explanation`] = r.explanation
+  })
+
+  const L = await localizeReportStrings(strings, locale, {
+    analysisId: analysis.id,
+    revision: analysis.revision,
+  })
+  const tr = (key: string, fallback: string) => L[key] ?? fallback
 
   return (
     <div className="min-h-screen bg-[#050505] text-gray-100 font-sans selection:bg-blue-500/30">
@@ -41,7 +81,7 @@ export default async function ReportPage({ params }: { params: { slug: string } 
           <div className="absolute inset-0 bg-blue-500/10 blur-[100px] -z-10 rounded-full" />
           <div>
             <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-br from-white to-gray-500 mb-6">
-              {doc.title}
+              {tr("title", doc.title)}
             </h1>
             {/*
               The "AI Generated" chip and the confidence percentage were removed
@@ -74,7 +114,7 @@ export default async function ReportPage({ params }: { params: { slug: string } 
             <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-blue-500/10 transition-colors duration-500" />
             <h2 className="text-sm font-medium text-gray-400 uppercase tracking-widest">Executive Summary</h2>
             <p className="text-lg md:text-xl leading-relaxed text-gray-200 whitespace-pre-wrap">
-              {analysis.summary || "No executive summary available."}
+              {analysis.summary ? tr("summary", analysis.summary) : "No executive summary available."}
             </p>
           </div>
         </div>
@@ -89,7 +129,7 @@ export default async function ReportPage({ params }: { params: { slug: string } 
               {analysis.metrics.map((metric) => (
                 <div key={metric.id} className="p-6 rounded-2xl bg-gradient-to-b from-white/[0.04] to-transparent border border-white/[0.05] hover:border-white/[0.1] transition-colors relative overflow-hidden">
                   <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-                  <p className="text-sm text-gray-400 mb-2 truncate" title={metric.label}>{metric.label}</p>
+                  <p className="text-sm text-gray-400 mb-2 truncate" title={tr(`metric.${metric.id}.label`, metric.label)}>{tr(`metric.${metric.id}.label`, metric.label)}</p>
                   <p className="text-2xl font-bold text-white tracking-tight">
                     {metric.value}
                     {metric.unit ? ` ${metric.unit}` : ''}
@@ -109,7 +149,7 @@ export default async function ReportPage({ params }: { params: { slug: string } 
             </h3>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {analysis.charts.map((chart) => (
-                <ReportChart key={chart.id} chart={chart} />
+                <ReportChart key={chart.id} chart={{ ...chart, title: tr(`chart.${chart.id}.title`, chart.title) }} />
               ))}
             </div>
           </section>

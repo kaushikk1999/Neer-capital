@@ -18,6 +18,7 @@ import {
 import type { ChartV2Config, ChartV2Point, ClassificationCodeT } from "@/lib/report/types"
 import { isForecastCode } from "@/lib/report/types"
 import { NOT_FOUND_IN_SOURCE } from "@/lib/finance/normalize"
+import { useLanguage } from "@/lib/i18n/LanguageContext"
 
 /**
  * Chart rendering for extracted financial series.
@@ -49,6 +50,11 @@ interface ChartRow {
   sourcePage: number | null
 }
 
+// Only real, meaningful signals are mapped here. Codes/levels NOT present in
+// these maps (classification "U"; confidence "UNVERIFIED"/"MISSING") are ones
+// we do not actually have — legacy charts stamp them as placeholders — so they
+// resolve to the localized "Not available" instead of leaking raw internal
+// tokens ("Unclassified", "unverified") that read as a real assessment.
 const CLASSIFICATION_LABEL: Record<string, string> = {
   A: "Actual",
   R: "Restated",
@@ -58,8 +64,17 @@ const CLASSIFICATION_LABEL: Record<string, string> = {
   C: "Consensus estimate",
   S: "Scenario",
   AI: "Platform derived",
-  U: "Unclassified",
 }
+
+const CONFIDENCE_LABEL: Record<string, string> = {
+  HIGH: "High",
+  MEDIUM: "Medium",
+  LOW: "Low",
+  CONFLICTING: "Conflicting",
+}
+
+const classificationLabel = (code: string, na: string): string => CLASSIFICATION_LABEL[code] ?? na
+const confidenceLabel = (level: string, na: string): string => CONFIDENCE_LABEL[level] ?? na
 
 /** Legacy configs carry no classification, so nothing may be claimed as forecast. */
 function adaptLegacy(config: LegacyConfig, seriesName: string): ChartV2Config | null {
@@ -128,22 +143,26 @@ function ChartTooltip({
   payload?: { payload: ChartRow }[]
   config: ChartV2Config
 }) {
+  const { t } = useLanguage()
   if (!active || !payload?.length) return null
+  const na = t("chart.notAvailable")
   const row = payload[0].payload
   return (
     <div className="rounded-lg border border-white/15 bg-[#0b1220] px-3 py-2 text-xs shadow-xl">
       <p className="font-semibold text-white">{row.period}</p>
       <p className={row.missing ? "text-amber-300" : "text-gray-200"}>{formatValue(row.value, config)}</p>
       <p className="mt-1 text-gray-400">
-        {CLASSIFICATION_LABEL[row.classificationCode] ?? "Unclassified"}
+        {classificationLabel(row.classificationCode, na)}
         {row.isForecast ? " · forecast" : ""}
       </p>
-      <p className="text-gray-500">Confidence: {row.confidence.toLowerCase()}</p>
+      <p className="text-gray-500">Confidence: {confidenceLabel(row.confidence, na)}</p>
     </div>
   )
 }
 
 export default function ReportChart({ chart }: { chart: { type?: string; title: string; config?: unknown; configV2?: unknown } }) {
+  const { t } = useLanguage()
+  const na = t("chart.notAvailable")
   const [showTable, setShowTable] = useState(false)
 
   const config = useMemo<ChartV2Config | null>(() => {
@@ -283,9 +302,9 @@ export default function ReportChart({ chart }: { chart: { type?: string; title: 
                     {formatValue(r.value, config)}
                   </td>
                   <td className="py-2 pr-4 text-gray-400">
-                    {CLASSIFICATION_LABEL[r.classificationCode] ?? "Unclassified"}
+                    {classificationLabel(r.classificationCode, na)}
                   </td>
-                  <td className="py-2 text-gray-500">{r.confidence.toLowerCase()}</td>
+                  <td className="py-2 text-gray-500">{confidenceLabel(r.confidence, na)}</td>
                 </tr>
               ))}
             </tbody>

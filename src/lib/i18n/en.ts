@@ -417,4 +417,7 @@ export const en: TranslationDict = {
   'verify.resendDone': 'If that account needs verification, a new link is on its way.',
   'verify.checkTitle': 'Check your email',
   'verify.checkBody': 'We sent a verification link to your email. Click it to activate your account, then sign in.',
+
+  // ── Report chart ──
+  'chart.notAvailable': 'Not available',
 };
