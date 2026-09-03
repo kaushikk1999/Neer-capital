@@ -67,7 +67,7 @@ const TRANSLATE_BATCH = 8
 
 // Bump when the translation logic/prompt changes so previously cached results
 // (which may have been produced by older, less reliable logic) are invalidated.
-const TRANSLATOR_VERSION = "4"
+const TRANSLATOR_VERSION = "5"
 
 // A value the model legitimately keeps as-is: pure acronym / ticker / numeric /
 // symbol token (e.g. "EBITDA", "EPS", "GRSE"). Such a field being unchanged is

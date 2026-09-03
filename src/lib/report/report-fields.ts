@@ -15,12 +15,12 @@ export function parseRisks(risks: unknown): RiskItem[] {
 }
 
 type MetricLike = { id: string; label: string | null }
-type SectionLike = { id: string; heading: string | null; content: string | null }
+type SectionLike = { id: string; heading: string | null; content: string | null; sourceExcerpt: string | null }
 type ChartLike = { id: string; title: string | null }
 
-/** Every prose field rendered on the full report page. Numbers, tickers,
- *  currencies, dates, units and verbatim source excerpts are intentionally
- *  excluded and stay exactly as extracted. */
+/** Every prose field rendered on the full report page — including the source
+ *  excerpt / evidence quotes. Numbers, tickers, currencies, dates and units
+ *  stay as extracted (preserved by the translation prompt). */
 export function buildReportStrings(input: {
   title: string | null
   summary: string | null
@@ -36,11 +36,13 @@ export function buildReportStrings(input: {
   input.sections.forEach((x) => {
     if (x.heading) s[`section.${x.id}.heading`] = x.heading
     if (x.content) s[`section.${x.id}.content`] = x.content
+    if (x.sourceExcerpt) s[`section.${x.id}.excerpt`] = x.sourceExcerpt
   })
   input.charts.forEach((c) => { if (c.title) s[`chart.${c.id}.title`] = c.title })
   input.risks.forEach((r, i) => {
     if (r.risk) s[`risk.${i}.risk`] = r.risk
     if (r.explanation) s[`risk.${i}.explanation`] = r.explanation
+    if (r.evidence) s[`risk.${i}.evidence`] = r.evidence
   })
   return s
 }

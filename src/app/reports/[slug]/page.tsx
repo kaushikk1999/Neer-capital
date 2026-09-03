@@ -172,7 +172,7 @@ export default async function ReportPage({ params }: { params: { slug: string } 
                     <p className="text-gray-300 leading-relaxed whitespace-pre-wrap">{tr(`section.${section.id}.content`, section.content)}</p>
                     {section.sourceExcerpt && (
                       <blockquote className="pl-4 border-l-2 border-blue-500/30 text-sm text-gray-500 italic">
-                        &quot;{section.sourceExcerpt}&quot;
+                        &quot;{tr(`section.${section.id}.excerpt`, section.sourceExcerpt)}&quot;
                       </blockquote>
                     )}
                   </div>
@@ -196,7 +196,7 @@ export default async function ReportPage({ params }: { params: { slug: string } 
                     <li key={i} className="pl-4 border-l border-red-500/30">
                       <strong className="text-white block mb-1 text-lg">{risk.risk ? tr(`risk.${i}.risk`, risk.risk) : ""}</strong>
                       <span className="text-gray-400 block mb-3 leading-relaxed">{risk.explanation ? tr(`risk.${i}.explanation`, risk.explanation) : ""}</span>
-                      <em className="text-xs text-red-400/70 bg-red-950/50 px-2 py-1 rounded inline-block">{t("report.source")} &quot;{risk.evidence}&quot;</em>
+                      <em className="text-xs text-red-400/70 bg-red-950/50 px-2 py-1 rounded inline-block">{t("report.source")} &quot;{risk.evidence ? tr(`risk.${i}.evidence`, risk.evidence) : ""}&quot;</em>
                     </li>
                   ))}
                 </ul>
