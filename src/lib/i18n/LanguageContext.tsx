@@ -1,7 +1,6 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
 import { en } from './en';
 import { hi } from './hi';
 import { ta } from './ta';
@@ -33,18 +32,15 @@ export function LanguageProvider({ children, initialLocale = 'en' }: { children:
   // Seed from the server-provided cookie value so the first client render matches
   // the server HTML (no English flash, no hydration mismatch).
   const [locale, setLocaleState] = useState<Locale>(initialLocale);
-  const router = useRouter();
 
   useEffect(() => {
     try {
       const stored = localStorage.getItem('neer_lang') as Locale;
       if (stored && ['en', 'hi', 'ta'].includes(stored) && stored !== initialLocale) {
         setLocaleState(stored);
-        // Keep the cookie in sync so server-rendered pages (report prose) can
-        // read the same locale a returning visitor picked in a prior session,
-        // then refresh so server-translated content matches on this first load.
+        // Keep the cookie in sync so a returning visitor's next full page load
+        // is server-rendered in the language they picked previously.
         writeLocaleCookie(stored);
-        router.refresh();
       }
     } catch (e) {
       // Ignore localStorage errors (e.g. incognito)
@@ -54,9 +50,10 @@ export function LanguageProvider({ children, initialLocale = 'en' }: { children:
 
   const setLocale = (newLocale: Locale) => {
     if (newLocale === locale) return;
-    // Client UI (t()) updates instantly on this state change; the cookie +
-    // router.refresh() re-render the server components so server-translated
-    // content (report titles/summaries, report prose) switches too.
+    // Pure client-side switch: every language is already embedded in the page,
+    // so this state change re-renders the UI (t()) and the report content
+    // instantly — no server round-trip. The cookie only steers the next full
+    // page load / SSR.
     setLocaleState(newLocale);
     try {
       localStorage.setItem('neer_lang', newLocale);
@@ -64,7 +61,6 @@ export function LanguageProvider({ children, initialLocale = 'en' }: { children:
       // Ignore
     }
     writeLocaleCookie(newLocale);
-    router.refresh();
   };
 
   // `locale` is seeded from the server cookie, so it is already correct on the

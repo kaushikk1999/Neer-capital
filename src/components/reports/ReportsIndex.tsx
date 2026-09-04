@@ -3,22 +3,22 @@
 import Link from 'next/link'
 import { FileText, ArrowRight } from 'lucide-react'
 import { useLanguage } from '@/lib/i18n/LanguageContext'
+import type { Locale } from '@/lib/i18n/types'
 
 // The page stays a server component so the Prisma query runs on the server;
 // only the presentation moves here, because useLanguage needs a client
-// boundary. Titles, summaries and dates come from the analysed documents and
-// are shown in whatever language the source PDF used — the switcher governs
-// the interface, not the research content.
+// boundary. Title/summary are pre-translated into every language on the server
+// and embedded, so switching language is an instant client-side swap.
 export type ReportCard = {
   id: string
   slug: string
-  title: string
-  summary: string | null
+  title: Record<Locale, string>
+  summary: Record<Locale, string | null>
   updatedAt: string
 }
 
 export function ReportsIndex({ reports }: { reports: ReportCard[] }) {
-  const { t } = useLanguage()
+  const { t, locale } = useLanguage()
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-16 md:py-24">
@@ -55,10 +55,12 @@ export function ReportsIndex({ reports }: { reports: ReportCard[] }) {
               </div>
 
               <h2 className="text-xl font-bold text-white mb-3 line-clamp-2 group-hover:text-blue-200 transition-colors">
-                {doc.title}
+                {doc.title[locale] ?? doc.title.en}
               </h2>
 
-              {doc.summary && <p className="text-sm text-gray-400 line-clamp-3 mb-6">{doc.summary}</p>}
+              {(doc.summary[locale] ?? doc.summary.en) && (
+                <p className="text-sm text-gray-400 line-clamp-3 mb-6">{doc.summary[locale] ?? doc.summary.en}</p>
+              )}
 
               <div className="flex items-center text-sm text-blue-400 font-medium group-hover:translate-x-1 transition-transform">
                 {t('reports.viewFull')} <ArrowRight className="w-4 h-4 ml-1" />
