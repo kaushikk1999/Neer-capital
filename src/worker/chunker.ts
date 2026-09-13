@@ -25,9 +25,13 @@ export interface ChunkLimits {
 }
 
 export const DEFAULT_CHUNK_LIMITS: ChunkLimits = {
-  maxCharsPerChunk: 18000,
-  maxPagesPerChunk: 6,
-  maxChunks: 40,
+  // Larger chunks => fewer model calls for big filings; still well within the
+  // model context. maxChunks must satisfy maxChunks >= totalChars / maxCharsPerChunk
+  // or the plan truncates (drops tail pages -> PARTIAL). At 24k chars/chunk,
+  // 72 chunks covers ~1.7M chars (~330 pages) before truncation.
+  maxCharsPerChunk: 24000,
+  maxPagesPerChunk: 8,
+  maxChunks: 72,
 }
 
 export interface DocumentChunk {
