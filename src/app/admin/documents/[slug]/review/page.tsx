@@ -5,7 +5,6 @@ import { requireAdmin } from "@/lib/rbac"
 import ApproveButton from "@/components/admin/ApproveButton"
 import ReportChart from "@/components/charts/ReportChart"
 import { ExtractionQualityChip, ExtractionQualityPanel } from "@/components/admin/ExtractionQualityChip"
-import { RecommendationCard } from "@/components/admin/RecommendationCard"
 import { ReviewableMetrics } from "@/components/admin/ReviewableMetrics"
 import type { QualityCoverage } from "@/lib/report/types"
 import { T, ReviewBadge, PartialChip } from "@/components/admin/ReviewChrome"
@@ -55,8 +54,6 @@ export default async function AdminReviewPage({ params }: { params: { slug: stri
   // not, so the page falls back to the original rendering for old reports.
   const isV2 = v2AdminReadEnabled() && (analysis.schemaVersion ?? 1) >= 2
   const coverage = (analysis.qualityCoverage as unknown as QualityCoverage | null) ?? null
-  const valuationDetail = (analysis.valuationDetail ?? null) as Record<string, string | null> | null
-  const identity = (analysis.identity ?? null) as Record<string, string | null> | null
   const reviewActionsEnabled = v2ReviewActionsEnabled()
 
   return (
@@ -106,34 +103,14 @@ export default async function AdminReviewPage({ params }: { params: { slug: stri
         {isV2 && <div className="mb-10"><ExtractionQualityPanel coverage={coverage} /></div>}
 
         {/* Topline Summary */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
-          <div className="md:col-span-2 space-y-4 p-8 rounded-3xl bg-white/[0.02] border border-white/[0.05] backdrop-blur-xl relative overflow-hidden group">
+        <div className="mb-16">
+          <div className="space-y-4 p-8 rounded-3xl bg-white/[0.02] border border-white/[0.05] backdrop-blur-xl relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-blue-500/10 transition-colors duration-500" />
             <h2 className="text-sm font-medium text-gray-400 uppercase tracking-widest"><T k="review.execSummary" /></h2>
             <p className="text-lg md:text-xl leading-relaxed text-gray-200 whitespace-pre-wrap">
               {analysis.summary || <T k="review.noSummary" />}
             </p>
           </div>
-          {isV2 ? (
-            <RecommendationCard
-              valuation={valuationDetail}
-              researchHouse={identity?.researchHouse ?? null}
-            />
-          ) : (
-            <div className="space-y-4 p-8 rounded-3xl bg-white/[0.02] border border-white/[0.05] backdrop-blur-xl">
-              <h2 className="text-sm font-medium text-gray-400 uppercase tracking-widest"><T k="review.recommendation" /></h2>
-              <div className="flex items-end gap-3">
-                <span className="text-5xl font-bold text-white tracking-tighter">
-                  {analysis.recommendation || "N/A"}
-                </span>
-              </div>
-              {analysis.valuation && (
-                <p className="text-sm text-gray-500 mt-4">
-                  <T k="review.methodology" /> <span className="text-gray-300">{analysis.valuation}</span>
-                </p>
-              )}
-            </div>
-          )}
         </div>
 
         {/* Metrics Grid */}
