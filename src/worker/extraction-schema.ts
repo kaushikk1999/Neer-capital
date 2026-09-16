@@ -71,6 +71,9 @@ export const ExtractedMetricSchema = z.object({
   classificationCode: classification.describe(
     "A=actual R=restated P=preliminary G=management guidance E=analyst estimate C=consensus S=scenario U=unclear"
   ),
+  statementType: softStr.describe(
+    "Which financial statement this figure is from: 'consolidated', 'standalone', or 'segment'. Null if the report does not indicate one."
+  ),
   category: softStr.describe("e.g. Financial, Operational, Valuation"),
   sourceQuote: softText.describe("Verbatim sentence or table row from the page proving this value"),
   sourcePage: softInt.describe("1-indexed page number the value appears on"),
@@ -167,7 +170,7 @@ export const EXTRACTION_PROMPT_VERSION = "extract-v2.0"
 export const EXTRACTION_TEMPLATE = `{
   "identity": {"companyName": string|null, "ticker": string|null, "exchange": string|null, "isin": string|null, "sector": string|null, "industry": string|null, "currency": string|null, "researchHouse": string|null, "analystName": string|null, "analystTitle": string|null, "publishedDate": string|null, "reportType": string|null, "accountingBasis": string|null, "identityQuote": string, "identityPage": number|null},
   "valuation": {"rating": string|null, "previousRating": string|null, "cmp": string|null, "cmpDate": string|null, "baseTarget": string|null, "bullTarget": string|null, "bearTarget": string|null, "previousTarget": string|null, "horizon": string|null, "valuationBasis": string|null, "appliedMultiple": string|null, "valuationQuote": string, "valuationPage": number|null},
-  "metrics": [{"label": string, "rawValue": string, "period": string|null, "classificationCode": "A"|"R"|"P"|"G"|"E"|"C"|"S"|"U", "category": string|null, "sourceQuote": string, "sourcePage": number|null}],
+  "metrics": [{"label": string, "rawValue": string, "period": string|null, "classificationCode": "A"|"R"|"P"|"G"|"E"|"C"|"S"|"U", "statementType": "consolidated"|"standalone"|"segment"|null, "category": string|null, "sourceQuote": string, "sourcePage": number|null}],
   "risks": [{"name": string, "explanation": string, "sourceQuote": string, "sourcePage": number|null}],
   "catalysts": [{"name": string, "expectedPeriod": string|null, "direction": string|null, "explanation": string, "sourceQuote": string, "sourcePage": number|null}],
   "thesisPoints": [{"title": string, "explanation": string, "sourceQuote": string, "sourcePage": number|null}],
@@ -184,6 +187,7 @@ CRITICAL RULES:
 4. Unknown scalar values MUST be null. Unknown arrays MUST be []. Never guess, never approximate, never fill a gap with a nearby number.
 5. Every metric, risk, catalyst, thesis point and section MUST include a sourceQuote copied verbatim from the page and the 1-indexed sourcePage it appears on. If you cannot quote it, do not report it.
 6. classificationCode marks what a figure IS: A=actual, R=restated, P=preliminary, G=management guidance, E=analyst estimate, C=consensus, S=scenario, U=unclear. Forecast years are usually E.
+6a. statementType marks WHICH statement a figure is from: annual reports print both "consolidated" and "standalone" financials, and the same line item (e.g. Revenue for the same year) legitimately differs between them. Tag each metric from its section/table heading. These are NOT contradictions — never treat a consolidated value and a standalone value as the same figure.
 7. Respond with ONE JSON object using EXACTLY these keys and no others:
 ${EXTRACTION_TEMPLATE}`
 }

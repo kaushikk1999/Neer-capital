@@ -52,6 +52,10 @@ export interface MergedMetric {
   period: string | null
   periodSortKey: number | null
   classificationCode: string
+  /** Which statement the figure is from: CONSOLIDATED / STANDALONE / SEGMENT /
+   *  UNKNOWN. Keeps consolidated and standalone values of the same line item
+   *  from colliding as false contradictions. */
+  statementType: string
   category: string | null
   evidence: MergedEvidence
   /** Other values seen for the same metric+period that did not agree. */
@@ -113,6 +117,15 @@ function valuesAgree(a: string | null, b: string | null): boolean {
   return Math.abs(na - nb) / base <= 0.005
 }
 
+/** Map the model's free-text statementType to a stable bucket. */
+function normalizeStatementType(v: string | null | undefined): string {
+  const t = (v ?? "").toLowerCase()
+  if (t.includes("consolidat")) return "CONSOLIDATED"
+  if (t.includes("standalone") || t.includes("stand-alone") || t.includes("separate")) return "STANDALONE"
+  if (t.includes("segment")) return "SEGMENT"
+  return "UNKNOWN"
+}
+
 function normalizeMetric(
   m: ExtractedMetric,
   evidence: MergedEvidence
@@ -129,6 +142,7 @@ function normalizeMetric(
     period: period ? period.label : m.period,
     periodSortKey: period ? period.sortKey : null,
     classificationCode: m.classificationCode,
+    statementType: normalizeStatementType(m.statementType),
     category: m.category,
     evidence,
     conflicts: [],
@@ -206,8 +220,9 @@ export function mergeChunkExtractions(results: ChunkExtractionResult[]): MergedE
       const evidence = toEvidence(m.sourceQuote, quoteChecks[`metric:${i}`], chunkIndex)
       const merged = normalizeMetric(m, evidence)
 
-      // Identity of a metric: what it is, for which period, in what capacity.
-      const key = `${merged.taxonomyKey}::${merged.period ?? "?"}::${merged.classificationCode}`
+      // Identity of a metric: what it is, for which period, in what capacity,
+      // and from which statement (consolidated vs standalone are distinct facts).
+      const key = `${merged.taxonomyKey}::${merged.period ?? "?"}::${merged.classificationCode}::${merged.statementType}`
       const existing = metricsByKey.get(key)
 
       if (!existing) {

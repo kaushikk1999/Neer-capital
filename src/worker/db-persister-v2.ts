@@ -105,6 +105,7 @@ export async function persistAnalysisV2(input: PersistInput): Promise<PersistRes
     evidenceVerification: m.evidence.verification,
     currency: m.currency,
     scale: m.scale,
+    statementType: m.statementType,
   }))
 
   const valuationForChecks = {

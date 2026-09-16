@@ -68,6 +68,9 @@ export interface MetricInput {
   evidenceVerification: EvidenceVerifyT | null
   currency?: string | null
   scale?: string | null
+  /** CONSOLIDATED / STANDALONE / SEGMENT / UNKNOWN — separates the same line
+   *  item across statements so it is not flagged as a contradiction. */
+  statementType?: string | null
 }
 
 export interface SectionInput {
@@ -226,7 +229,7 @@ export function contradictionChecks(metrics: MetricInput[], tolerance = 0.01): V
 
   for (const m of metrics) {
     if (!m.decimalValue || !m.period || m.taxonomyKey === "unmapped") continue
-    const key = `${m.taxonomyKey}::${m.period}::${m.classificationCode ?? "U"}`
+    const key = `${m.taxonomyKey}::${m.period}::${m.classificationCode ?? "U"}::${m.statementType ?? "UNKNOWN"}`
     const list = groups.get(key) ?? []
     list.push(m)
     groups.set(key, list)
@@ -242,10 +245,13 @@ export function contradictionChecks(metrics: MetricInput[], tolerance = 0.01): V
         issues.push(
           issue(
             "CONTRADICTORY_METRIC_VALUE",
-            "BLOCKER",
+            // WARNING, not BLOCKER: the same metric+period+statement can carry
+            // more than one reported value (rounding, restatement, notes). Worth
+            // a reviewer's eye, but it must not block publication on its own.
+            "WARNING",
             "DocumentMetric",
             other.id,
-            `${taxonomyKey} for ${period} appears with conflicting values in the source report.`,
+            `${taxonomyKey} for ${period} has multiple reported values in the source report.`,
             {
               taxonomyKey,
               period,
