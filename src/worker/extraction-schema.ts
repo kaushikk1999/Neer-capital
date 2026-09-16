@@ -161,7 +161,7 @@ export type ExtractedIdentity = z.infer<typeof ExtractedIdentitySchema>
 export type ExtractedValuation = z.infer<typeof ExtractedValuationSchema>
 
 /** Prompt version travels with every run so output can be traced to its instructions. */
-export const EXTRACTION_PROMPT_VERSION = "extract-v2.0"
+export const EXTRACTION_PROMPT_VERSION = "extract-v2.1"
 
 /**
  * The key-by-key template. Naming every field explicitly is what makes a model

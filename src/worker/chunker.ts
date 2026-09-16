@@ -14,6 +14,7 @@
 import { createHash } from "crypto"
 import type { ParsedDocument, ParsedPage } from "@/worker/parser/layout-parser"
 import type { ReconstructedTable } from "@/worker/parser/table-reconstruct"
+import { EXTRACTION_PROMPT_VERSION } from "@/worker/extraction-schema"
 
 export interface ChunkLimits {
   /** Soft cap on characters per chunk; a single oversized page still ships alone. */
@@ -60,8 +61,11 @@ function renderPage(page: ParsedPage): string {
 }
 
 function hashChunk(pageStart: number, pageEnd: number, text: string): string {
+  // The prompt/schema version is part of the hash: when extraction changes (e.g.
+  // a new field like statementType), the hash changes so cached chunks from an
+  // older schema are re-extracted on reprocess rather than silently reused.
   return createHash("sha256")
-    .update(`${pageStart}:${pageEnd}:`)
+    .update(`${EXTRACTION_PROMPT_VERSION}:${pageStart}:${pageEnd}:`)
     .update(text)
     .digest("hex")
     .slice(0, 32)
