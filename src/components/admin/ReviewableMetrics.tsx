@@ -34,13 +34,6 @@ export interface ReviewableMetric {
   provenance: string | null
 }
 
-const STATUS_STYLE: Record<string, string> = {
-  APPROVED: "border-emerald-400/30 bg-emerald-400/10 text-emerald-300",
-  REJECTED: "border-red-400/30 bg-red-400/10 text-red-300",
-  MISSING: "border-amber-400/30 bg-amber-400/10 text-amber-300",
-  NEEDS_REVIEW: "border-amber-400/30 bg-amber-400/10 text-amber-300",
-  NOT_REVIEWED: "border-white/10 bg-white/5 text-gray-400",
-}
 
 export function ReviewableMetrics({
   analysisId,
@@ -155,18 +148,13 @@ export function ReviewableMetrics({
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {metrics.map((m) => {
-          const unverified = m.verification === "UNVERIFIED" || m.verification === "APPROXIMATE_MATCH"
-          const conflicting = m.validationStatus === "CONFLICTING"
           return (
             <div
               key={m.id}
               className="relative rounded-2xl border border-white/[0.06] bg-gradient-to-b from-white/[0.04] to-transparent p-5"
             >
-              <div className="mb-2 flex items-start justify-between gap-2">
+              <div className="mb-2 flex items-start gap-2">
                 <p className="truncate text-sm text-gray-400" title={m.label}>{m.label}</p>
-                <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] uppercase ${STATUS_STYLE[m.reviewStatus] ?? STATUS_STYLE.NOT_REVIEWED}`}>
-                  {m.reviewStatus.replace("_", " ").toLowerCase()}
-                </span>
               </div>
 
               <p className="text-2xl font-bold tracking-tight text-white">
@@ -176,8 +164,6 @@ export function ReviewableMetrics({
 
               <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px]">
                 {m.period && <span className="uppercase tracking-wider text-gray-500">{m.period}</span>}
-                {conflicting && <span className="text-red-300">{t("metrics.conflicting")}</span>}
-                {!conflicting && unverified && <span className="text-amber-300">{t("metrics.unverified")}</span>}
                 {m.sourcePage != null && <span className="text-gray-600">p{m.sourcePage}</span>}
               </div>
 

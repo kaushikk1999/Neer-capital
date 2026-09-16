@@ -252,6 +252,34 @@ export function parsePeriod(input: string | null | undefined): ParsedPeriod | nu
     }
   }
 
+  // Calendar year-end dates as they appear in extracted table headers, e.g.
+  // "31.03.2026", "31/03/2025", "MARCH 31, 2026". For (India-standard) March
+  // year-ends the calendar year IS the fiscal-year end, so normalise the date
+  // to FY<year>. Without this, "31.03.2026" and "MARCH 31, 2026" are treated as
+  // different periods (missed merges) and undated values collapse together
+  // (false conflicts). We only need the year to key the period correctly.
+  const annualFromDate = (year: number) => ({
+    label: `FY${String(year).slice(-2)}`,
+    periodType: "ANNUAL" as const,
+    fiscalYearEnd: year,
+    quarter: null,
+    sortKey: year * 10,
+  })
+
+  // Numeric date: DD.MM.YY(YY) with . / or - separators (year is the last part).
+  const numDate = text.match(/^\d{1,2}[.\/-]\d{1,2}[.\/-](\d{2,4})$/)
+  if (numDate) {
+    const year = toFullYear(numDate[1])
+    if (Number.isFinite(year)) return annualFromDate(year)
+  }
+
+  // Month-name date: "MARCH31,2026" (spaces already stripped) — take the year.
+  const nameDate = text.match(/^[A-Z]{3,9}\.?\d{1,2},?(\d{2,4})$/)
+  if (nameDate) {
+    const year = toFullYear(nameDate[1])
+    if (Number.isFinite(year)) return annualFromDate(year)
+  }
+
   return null
 }
 

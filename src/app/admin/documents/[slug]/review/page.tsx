@@ -4,9 +4,7 @@ import { FileText, Activity, AlertTriangle, TrendingUp, CheckCircle, BarChart3 }
 import { requireAdmin } from "@/lib/rbac"
 import ApproveButton from "@/components/admin/ApproveButton"
 import ReportChart from "@/components/charts/ReportChart"
-import { ExtractionQualityChip, ExtractionQualityPanel } from "@/components/admin/ExtractionQualityChip"
 import { ReviewableMetrics } from "@/components/admin/ReviewableMetrics"
-import type { QualityCoverage } from "@/lib/report/types"
 import { T, ReviewBadge, PartialChip } from "@/components/admin/ReviewChrome"
 
 /** V2 admin rendering is gated; with the flag off this page is unchanged. */
@@ -53,7 +51,6 @@ export default async function AdminReviewPage({ params }: { params: { slug: stri
   // A V2 analysis carries structured coverage and valuation; a legacy one does
   // not, so the page falls back to the original rendering for old reports.
   const isV2 = v2AdminReadEnabled() && (analysis.schemaVersion ?? 1) >= 2
-  const coverage = (analysis.qualityCoverage as unknown as QualityCoverage | null) ?? null
   const reviewActionsEnabled = v2ReviewActionsEnabled()
 
   return (
@@ -93,14 +90,11 @@ export default async function AdminReviewPage({ params }: { params: { slug: stri
               every report regardless of how well extraction actually went, so
               displaying it was worse than displaying nothing.
             */}
-            {isV2 && <ExtractionQualityChip coverage={coverage} />}
             {isV2 && analysis.status === "PARTIAL" && (
               <PartialChip />
             )}
           </div>
         </header>
-
-        {isV2 && <div className="mb-10"><ExtractionQualityPanel coverage={coverage} /></div>}
 
         {/* Topline Summary */}
         <div className="mb-16">
