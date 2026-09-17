@@ -122,15 +122,17 @@ export async function persistAnalysisV2(input: PersistInput): Promise<PersistRes
     ...contradictionChecks(metricInputs),
   ]
 
-  // Conflicts detected during merge are first-class issues too.
+  // Multiple reported values for the same metric (across consolidated/standalone
+  // statements, prior-year columns, notes, rounding) are normal in a full annual
+  // report — surface them for review as WARNINGs, but never block publish.
   merged.metrics.forEach((m, i) => {
     for (const c of m.conflicts) {
       issues.push({
         code: "CONTRADICTORY_METRIC_VALUE",
-        severity: "BLOCKER",
+        severity: "WARNING",
         entityType: "DocumentMetric",
         entityId: `idx:${i}`,
-        message: `${m.label} for ${m.period ?? "unknown period"} appears with conflicting values in the source report.`,
+        message: `${m.label} for ${m.period ?? "unknown period"} has multiple reported values in the source report.`,
         details: {
           kept: { value: m.decimalValue, page: m.evidence.page },
           conflicting: { value: c.decimalValue, page: c.evidence.page },
