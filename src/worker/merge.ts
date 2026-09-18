@@ -293,7 +293,7 @@ export function mergeChunkExtractions(results: ChunkExtractionResult[]): MergedE
     risks: dedupeNarrative(risks),
     catalysts: dedupeNarrative(catalysts),
     thesisPoints: dedupeNarrative(thesisPoints),
-    sections: dedupeNarrative(sections),
+    sections: dedupeNarrative(sections).filter(isAnalyticalSection),
     stats: {
       chunks: ordered.length,
       rawMetricCount,
@@ -302,6 +302,67 @@ export function mergeChunkExtractions(results: ChunkExtractionResult[]): MergedE
       conflictCount,
     },
   }
+}
+
+// A statutory annual report is ~90% procedural / governance / statutory-notes
+// boilerplate. The extraction prompt asks the model to skip it, but a full
+// filing overwhelms that instruction, so we drop non-analytical sections
+// deterministically by heading. We KEEP business/financial analysis (MD&A):
+// industry structure, outlook, opportunities, strengths, performance, key
+// developments, segment commentary. Numbers still come through as metrics/charts.
+const NON_ANALYTICAL_SECTION = new RegExp(
+  [
+    // Meeting / voting / shareholder procedure
+    "notice", "e-?voting", "insta ?meet", "postal ballot", "proxy", "attendance",
+    "\\bagm\\b", "\\begm\\b", "general (meeting|body)", "means of communication",
+    "shareholder information", "shareholding", "shareholders holding",
+    // Board / governance / secretarial
+    "\\bdirector", "key managerial", "\\bkmp\\b", "committee", "nomination", "remuneration",
+    "senior management", "related party", "corporate governance", "secretarial",
+    "board evaluation", "criteria for evaluation", "relationship between directors",
+    "core competence",
+    // Audit / statutory / legal
+    "auditor", "audit report", "audit matter", "internal financial control", "statutory dues",
+    "report on other legal", "\\bopinion\\b", "other matters", "fraud", "whistle", "vigil",
+    "insolvency", "bankruptcy", "material orders", "responsible business",
+    // CSR / ESG / BRSR / HR / people
+    "\\bcsr\\b", "corporate social responsibility", "posh", "sexual harassment",
+    "business responsibility", "sustainability", "\\bbrsr\\b", "ngrbc", "human rights",
+    "stakeholder", "grievance", "conservation of energy", "energy consumption", "waste",
+    "zero liquid", "pat scheme", "environment", "anti-?corruption", "bribery",
+    "conflict of interest", "anti-?competitive", "public policy", "community",
+    "data privacy", "cyber security", "employee", "worker", "well-?being", "workplace",
+    "equal opportunity", "health and safety", "working conditions", "value chain",
+    "trade and industry affiliation", "accessibility",
+    // Shareholder admin / capital actions
+    "dividend", "demateriali", "iepf", "investor education", "unclaimed", "unpaid",
+    "share transfer", "investor grievance", "corporate benefits", "utilization of funds",
+    "\\bqip\\b", "bonus shares", "stock option", "share.?based payment", "employees stock",
+    // Accounting notes / statements / policies
+    "^note\\s*\\d+", "balance sheet", "profit and loss", "changes in equity", "cash ?flow",
+    "basis of preparation", "background and corporate", "accounting polic",
+    "management judgment", "provisions", "contingent", "fair value", "financial instrument",
+    "financial risk", "financial liabilit", "financial asset", "revenue recognition",
+    "income tax", "deferred tax", "provision for", "borrowing cost", "finance cost",
+    "property, plant", "intangible", "investment in propert", "inventor", "employee benefit",
+    "defined contribution", "lease liabilit", "policy for lease", "trade payable",
+    "trade receivable", "cash and cash equivalent", "segment (information|reporting|ation)",
+    "operating seg", "company information", "rights attached", "depreciation", "amortis",
+    "other expenses", "credit risk", "liquidity risk", "market risk", "interest rate risk",
+    "price risk", "capital management", "operating cycle", "labour code", "statutory information",
+    "unhedge", "earning.? per share", "earnings per share",
+    // Generic disclosure / statement containers
+    "annexure", "^disclosures?$", "general disclosures", "transparency and disclosures",
+    "^operations$", "^governance", "subsidiar", "holding, subsidiary", "section [ab]:",
+    "leadership indicators", "policy and management",
+  ].join("|"),
+  "i"
+)
+
+/** True only for substantive business/financial-analysis sections. */
+export function isAnalyticalSection(item: { title?: string | null }): boolean {
+  const h = (item.title ?? "").trim()
+  return h.length > 0 && !NON_ANALYTICAL_SECTION.test(h)
 }
 
 /** Narrative items repeat across chunk boundaries; collapse on title+body. */
