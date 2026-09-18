@@ -361,7 +361,8 @@ const NON_ANALYTICAL_SECTION = new RegExp(
     "\\bemissions\\b", "social impact", "consumer complaint", "data breach",
     "loans and advances", "foreign currency", "business combination", "goodwill",
     "recognition of income", "post.?employment", "defined benefit", "audit trail",
-    "based payment",
+    "based payment", "revenue from", "insider trading", "career development", "\\bhazard",
+    "technology absorption",
   ].join("|"),
   "i"
 )
