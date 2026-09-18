@@ -355,6 +355,13 @@ const NON_ANALYTICAL_SECTION = new RegExp(
     "annexure", "^disclosures?$", "general disclosures", "transparency and disclosures",
     "^operations$", "^governance", "subsidiar", "holding, subsidiary", "section [ab]:",
     "leadership indicators", "policy and management",
+    // Additional statutory / accounting-policy / ESG headings (observed stragglers)
+    "\\bdeposits\\b", "board diversity", "risk management policy", "external assessment",
+    "\\btraining\\b", "performance review", "\\bwater\\b", "air emission", "\\bghg\\b",
+    "\\bemissions\\b", "social impact", "consumer complaint", "data breach",
+    "loans and advances", "foreign currency", "business combination", "goodwill",
+    "recognition of income", "post.?employment", "defined benefit", "audit trail",
+    "based payment",
   ].join("|"),
   "i"
 )
