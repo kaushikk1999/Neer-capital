@@ -3,7 +3,7 @@ import path from "path"
 import { prisma } from "@/lib/db"
 import type { Locale } from "@/lib/i18n/types"
 import { localizeReportStrings } from "@/lib/report/translate"
-import { buildReportStrings, parseRisks } from "@/lib/report/report-fields"
+import { buildReportStrings, parseRisks, stripRecommendation } from "@/lib/report/report-fields"
 import { generateVideoScript } from "./script"
 import { synthesizeNarration } from "./tts"
 import type { SceneKey } from "./types"
@@ -19,7 +19,6 @@ type ChartPoint = { label: string; value: number }
 export interface VideoReportData {
   slug: string
   companyTitle: string
-  recommendation: string
   summary: string | null
   metrics: { label: string; value: string }[]
   chart: { title: string; points: ChartPoint[] }
@@ -30,7 +29,6 @@ export interface VideoReportData {
 export const SAMPLE_REPORT_DATA: VideoReportData = {
   slug: "sample",
   companyTitle: "Balrampur Chini",
-  recommendation: "BUY",
   summary: "A turnaround story betting big on ethanol, with a cleaned-up balance sheet.",
   metrics: [
     { label: "Market Cap", value: "11,977 Rs Cr" },
@@ -61,12 +59,6 @@ function firstChartPoints(configV2: unknown): ChartPoint[] | null {
   return points.length >= 2 ? points : null
 }
 
-function matchRecommendation(summary: string | null): string | null {
-  if (!summary) return null
-  const m = summary.match(/recommendation[:\s]+([A-Za-z ]+)/i)
-  return m ? m[1].trim().split(/\s/)[0] : null
-}
-
 /**
  * Core: turn already-assembled (localized) report data into Remotion inputs —
  * generate the narration, optionally synthesize the voiceover, and write
@@ -81,7 +73,6 @@ export async function buildVideoAssetsFromData(
 
   const script = await generateVideoScript({
     companyTitle: data.companyTitle,
-    recommendation: data.recommendation || "—",
     summary: data.summary,
     metrics: data.metrics,
     risk: data.risk,
@@ -108,7 +99,6 @@ export async function buildVideoAssetsFromData(
 
   const props = {
     companyTitle: data.companyTitle,
-    recommendation: data.recommendation || "—",
     metrics: data.metrics,
     chart: data.chart,
     risk: data.risk ?? { title: "", text: "" },
@@ -151,9 +141,11 @@ export async function buildVideoAssets(opts: {
   if (!doc || !analysis) throw new Error(`No published analysis for slug "${slug}"`)
 
   const risks = parseRisks(analysis.risks)
+  // Analysis only — never surface a buy/sell/hold call in the video either.
+  const cleanSummary = stripRecommendation(analysis.summary)
   const base = buildReportStrings({
     title: doc.title,
-    summary: analysis.summary,
+    summary: cleanSummary,
     metrics: analysis.metrics,
     sections: analysis.sections,
     charts: analysis.charts,
@@ -165,15 +157,13 @@ export async function buildVideoAssets(opts: {
       : await localizeReportStrings(base, locale, { analysisId: analysis.id, revision: analysis.revision })
   const tr = (key: string, fallback: string) => L[key] ?? base[key] ?? fallback
 
-  const recommendation = (analysis.recommendation || matchRecommendation(analysis.summary) || "").toUpperCase()
   const chartSource = analysis.charts.find((c) => firstChartPoints(c.configV2))
   const chartPts = chartSource ? firstChartPoints(chartSource.configV2) : null
 
   const data: VideoReportData = {
     slug,
     companyTitle: tr("title", doc.title),
-    recommendation,
-    summary: tr("summary", analysis.summary ?? ""),
+    summary: tr("summary", cleanSummary ?? ""),
     metrics: analysis.metrics.slice(0, 3).map((m) => ({
       label: tr(`metric.${m.id}.label`, m.label),
       value: `${m.value}${m.unit ? ` ${m.unit}` : ""}`,

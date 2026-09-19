@@ -17,7 +17,6 @@ export interface VideoScript {
 /** Minimal report shape the script generator needs. */
 export interface VideoReportInput {
   companyTitle: string
-  recommendation: string
   summary: string | null
   metrics: { label: string; value: string }[]
   risk: { title: string; text: string } | null

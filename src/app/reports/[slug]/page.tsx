@@ -2,7 +2,7 @@ import { notFound } from "next/navigation"
 import { prisma } from "@/lib/db"
 import { ReportView } from "@/components/reports/ReportView"
 import { localizeReportStrings } from "@/lib/report/translate"
-import { buildReportStrings, parseRisks } from "@/lib/report/report-fields"
+import { buildReportStrings, parseRisks, stripRecommendation } from "@/lib/report/report-fields"
 import type { Locale } from "@/lib/i18n/types"
 
 async function getReport(slug: string) {
@@ -33,11 +33,13 @@ export default async function ReportPage({ params }: { params: { slug: string } 
 
   const analysis = doc.publishedAnalysis!
   const risks = parseRisks(analysis.risks)
+  // Neer shows analysis only — strip any buy/sell/hold recommendation line.
+  const summary = stripRecommendation(analysis.summary)
 
   // English base map (shared with the publish-time pre-warm so cache keys match).
   const strings = buildReportStrings({
     title: doc.title,
-    summary: analysis.summary,
+    summary,
     metrics: analysis.metrics,
     sections: analysis.sections,
     charts: analysis.charts,
@@ -57,7 +59,7 @@ export default async function ReportPage({ params }: { params: { slug: string } 
     <ReportView
       slug={doc.slug}
       dateLabel={new Date(analysis.createdAt).toLocaleDateString()}
-      hasSummary={!!analysis.summary}
+      hasSummary={!!summary}
       metrics={analysis.metrics.map((m) => ({ id: m.id, value: m.value, unit: m.unit, period: m.period }))}
       charts={analysis.charts.map((c) => ({ id: c.id, type: c.type, config: c.config, configV2: c.configV2 }))}
       sections={analysis.sections.map((s) => ({ id: s.id, hasExcerpt: !!s.sourceExcerpt }))}

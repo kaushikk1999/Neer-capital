@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db"
 import { ReportsIndex, type ReportCard } from "@/components/reports/ReportsIndex"
 import { localizeReportStrings } from "@/lib/report/translate"
-import { buildCardStrings } from "@/lib/report/report-fields"
+import { buildCardStrings, stripRecommendation } from "@/lib/report/report-fields"
 
 export const metadata = { title: "Research Reports | Neer Capital" }
 export const dynamic = "force-dynamic"
@@ -21,7 +21,7 @@ export default async function ReportsIndexPage() {
   const reports: ReportCard[] = await Promise.all(
     publishedDocs.map(async (doc) => {
       const analysis = doc.publishedAnalysis
-      const summary = analysis?.summary ?? null
+      const summary = stripRecommendation(analysis?.summary ?? null)
       const title = { en: doc.title, hi: doc.title, ta: doc.title }
       const summaries = { en: summary, hi: summary, ta: summary }
       if (analysis) {

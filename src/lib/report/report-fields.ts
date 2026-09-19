@@ -4,6 +4,26 @@
 
 export type RiskItem = { risk?: string; explanation?: string; evidence?: string }
 
+// Neer presents analysis, not investment calls. Strip any explicit
+// recommendation/rating line from extracted prose (e.g. "Recommendation: BUY",
+// "Rating: Accumulate", or a standalone "Buy in Rs 1492-1522 band …") so the
+// site never surfaces a buy/sell/hold instruction. Analysis text is untouched.
+export function stripRecommendation(text: string | null): string | null {
+  if (!text) return text
+  const kept = text
+    .split("\n")
+    .filter((line) => {
+      const t = line.trim()
+      if (/^(recommendation|rating|our call|action|stance|view)\b\s*[:\-]/i.test(t)) return false
+      if (/^(buy|sell|hold|accumulate|reduce|add|book profit|exit|subscribe|avoid)\b/i.test(t)) return false
+      return true
+    })
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim()
+  return kept.length > 0 ? kept : null
+}
+
 export function parseRisks(risks: unknown): RiskItem[] {
   if (typeof risks !== "string") return []
   try {

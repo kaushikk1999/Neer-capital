@@ -38,13 +38,13 @@ function templateScript(input: VideoReportInput): VideoScript {
     : "the key numbers"
   return {
     segments: [
-      { scene: "intro", text: `${input.companyTitle}. The call: ${input.recommendation}.` },
+      { scene: "intro", text: `${input.companyTitle} — here's what the numbers say.` },
       { scene: "metrics", text: `Here's what stands out — ${metricLine}.` },
       { scene: "chart", text: `And the trend? Take a look at where it's heading.` },
       { scene: "risk", text: input.risk ? `One risk to watch: ${input.risk.title}.` : `Every call carries risk.` },
       { scene: "outro", text: `That's the story in under a minute. More at Neer Capital.` },
     ],
-    takeaway: (input.summary || `${input.companyTitle}: ${input.recommendation}`).split(/[.\n]/)[0].slice(0, 90),
+    takeaway: (input.summary || input.companyTitle).split(/[.\n]/)[0].slice(0, 90),
   }
 }
 
@@ -60,18 +60,18 @@ export async function generateVideoScript(input: VideoReportInput): Promise<Vide
   const language = LANGUAGE_NAME[input.locale] ?? "English"
   const facts = {
     company: input.companyTitle,
-    recommendation: input.recommendation,
     summary: input.summary ?? "",
     metrics: input.metrics.slice(0, 3),
     risk: input.risk,
   }
-  const system = `You write short, energetic voiceover scripts for vertical finance videos aimed at a young retail audience (think Reels/Shorts). Tone: confident, plain-spoken, a little punchy — NOT hype, NOT clickbait, NOT financial advice.
+  const system = `You write short, energetic voiceover scripts for vertical finance videos aimed at a young retail audience (think Reels/Shorts). Tone: confident, plain-spoken, a little punchy — NOT hype, NOT clickbait.
+This is analysis ONLY, never advice. Do NOT tell viewers to buy, sell, hold, accumulate or exit, and do NOT state or imply a recommendation, rating or price target. Describe the business and the numbers; let viewers draw their own conclusion.
 Return ONE JSON object:
 {"segments":[{"scene":"intro","text":"..."},{"scene":"metrics","text":"..."},{"scene":"chart","text":"..."},{"scene":"risk","text":"..."},{"scene":"outro","text":"..."}],"takeaway":"..."}
 RULES:
 1. Exactly these five scenes in this order. Each "text" is ONE spoken sentence, ~12-22 words.
 2. Write everything in ${language}. Keep company names, tickers and currency figures exactly as given (do not translate or invent numbers).
-3. "takeaway" is a single ${language} line, <= 90 characters.
+3. "takeaway" is a single ${language} line, <= 90 characters, and must NOT contain a buy/sell/hold call or recommendation.
 4. Output JSON only — no code fences, no commentary.`
 
   try {
