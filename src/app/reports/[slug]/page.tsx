@@ -66,6 +66,7 @@ export default async function ReportPage({ params }: { params: { slug: string } 
       risks={risks.map((r) => ({ hasEvidence: !!r.evidence }))}
       showRisks={!!analysis.risks}
       risksParsable={typeof analysis.risks === "string"}
+      videoUrl={doc.videoUrl}
       loc={loc}
     />
   )

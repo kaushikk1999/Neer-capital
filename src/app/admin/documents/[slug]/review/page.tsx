@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db"
 import { FileText, Activity, AlertTriangle, TrendingUp, CheckCircle, BarChart3 } from "lucide-react"
 import { requireAdmin } from "@/lib/rbac"
 import ApproveButton from "@/components/admin/ApproveButton"
+import VideoUrlForm from "@/components/admin/VideoUrlForm"
 import ReportChart from "@/components/charts/ReportChart"
 import { ReviewableMetrics } from "@/components/admin/ReviewableMetrics"
 import { T, ReviewBadge, PartialChip } from "@/components/admin/ReviewChrome"
@@ -106,6 +107,9 @@ export default async function AdminReviewPage({ params }: { params: { slug: stri
             </p>
           </div>
         </div>
+
+        {/* Presenter video (shown on the public report page when set) */}
+        <VideoUrlForm documentId={document.id} initialUrl={document.videoUrl} />
 
         {/* Metrics Grid */}
         {analysis.metrics.length > 0 && (

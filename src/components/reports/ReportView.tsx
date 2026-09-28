@@ -3,6 +3,7 @@
 import { FileText, AlertTriangle, TrendingUp, BarChart3 } from 'lucide-react'
 import ReportChart from '@/components/charts/ReportChart'
 import { FeedbackPrompt } from '@/components/reports/FeedbackPrompt'
+import { ReportVideoPlayer } from '@/components/reports/ReportVideoPlayer'
 import { useLanguage } from '@/lib/i18n/LanguageContext'
 import type { Locale } from '@/lib/i18n/types'
 
@@ -20,6 +21,7 @@ export interface ReportViewProps {
   risks: { hasEvidence: boolean }[]
   showRisks: boolean
   risksParsable: boolean
+  videoUrl?: string | null
   loc: LocaleMaps
 }
 
@@ -63,6 +65,14 @@ export function ReportView(props: ReportViewProps) {
             </p>
           </div>
         </div>
+
+        {props.videoUrl && (
+          <section className="mb-16">
+            <h2 className="text-sm font-medium text-gray-400 uppercase tracking-widest mb-4">{t('report.video')}</h2>
+            <ReportVideoPlayer url={props.videoUrl} title={`${tr('title')} — ${t('report.video')}`} />
+            <p className="mt-3 text-xs text-gray-500">{t('report.videoCaption')}</p>
+          </section>
+        )}
 
         {props.metrics.length > 0 && (
           <section className="mb-20">

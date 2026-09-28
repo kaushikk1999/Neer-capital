@@ -217,6 +217,9 @@ model Document {
   // V2: atomic pointer to the currently active immutable publication snapshot.
   activePublishedSnapshotId String? @unique @map("active_published_snapshot_id")
 
+  // Optional presenter video (e.g. a HeyGen MP4 on R2, or a YouTube link) shown on the public report page.
+  videoUrl String? @map("video_url") @db.Text
+
   uploadedBy        User?              @relation(fields: [uploadedById], references: [id])
   files             DocumentFile[]
   versions          DocumentVersion[]

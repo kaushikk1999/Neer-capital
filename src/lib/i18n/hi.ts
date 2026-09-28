@@ -329,6 +329,12 @@ export const hi: TranslationDict = {
   'review.approvePublish': 'स्वीकृत करें और प्रकाशित करें',
   'review.livePublished': 'प्रोडक्शन में लाइव',
   'review.publishFailed': 'प्रकाशित करने में विफल',
+  'review.videoLabel': 'प्रस्तुतकर्ता वीडियो URL',
+  'review.videoHint': 'MP4 (जैसे R2 पर) या YouTube वीडियो का https लिंक। हटाने के लिए खाली छोड़ें।',
+  'review.videoSave': 'वीडियो सहेजें',
+  'review.videoSaving': 'सहेजा जा रहा है…',
+  'review.videoSaved': 'सहेजा गया',
+  'review.videoFailed': 'वीडियो सहेजने में विफल',
   'quality.notAssessed': 'निष्कर्षण गुणवत्ता का आकलन नहीं हुआ',
   'quality.label': 'निष्कर्षण गुणवत्ता',
   'quality.prefix': 'निष्कर्षण गुणवत्ता:',
@@ -426,6 +432,8 @@ export const hi: TranslationDict = {
   'report.keyRisks': 'मुख्य जोखिम',
   'report.noRisks': 'कोई जोखिम पहचाना नहीं गया।',
   'report.source': 'स्रोत:',
+  'report.video': 'वीडियो सारांश',
+  'report.videoCaption': 'इस रिपोर्ट का AI-प्रस्तुत सारांश। केवल विश्लेषण, निवेश सलाह नहीं।',
 
   // ── Report chart ──
   'chart.notAvailable': 'उपलब्ध नहीं',

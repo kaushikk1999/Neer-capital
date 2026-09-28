@@ -329,6 +329,12 @@ export const ta: TranslationDict = {
   'review.approvePublish': 'ஒப்புதல் & வெளியிடு',
   'review.livePublished': 'உற்பத்தியில் நேரலை',
   'review.publishFailed': 'வெளியிட முடியவில்லை',
+  'review.videoLabel': 'வழங்குநர் வீடியோ URL',
+  'review.videoHint': 'MP4 (எ.கா. R2 இல்) அல்லது YouTube வீடியோவின் https இணைப்பு. நீக்க காலியாக விடவும்.',
+  'review.videoSave': 'வீடியோவைச் சேமி',
+  'review.videoSaving': 'சேமிக்கிறது…',
+  'review.videoSaved': 'சேமிக்கப்பட்டது',
+  'review.videoFailed': 'வீடியோவைச் சேமிக்க முடியவில்லை',
   'quality.notAssessed': 'பிரித்தெடுப்பு தரம் மதிப்பிடப்படவில்லை',
   'quality.label': 'பிரித்தெடுப்பு தரம்',
   'quality.prefix': 'பிரித்தெடுப்பு தரம்:',
@@ -426,6 +432,8 @@ export const ta: TranslationDict = {
   'report.keyRisks': 'முக்கிய இடர்கள்',
   'report.noRisks': 'இடர்கள் எதுவும் அடையாளம் காணப்படவில்லை.',
   'report.source': 'ஆதாரம்:',
+  'report.video': 'வீடியோ சுருக்கம்',
+  'report.videoCaption': 'இந்த அறிக்கையின் AI வழங்கிய சுருக்கம். பகுப்பாய்வு மட்டுமே, முதலீட்டு ஆலோசனை அல்ல.',
 
   // ── Report chart ──
   'chart.notAvailable': 'கிடைக்கவில்லை',

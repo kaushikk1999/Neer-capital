@@ -330,6 +330,12 @@ export const en: TranslationDict = {
   'review.approvePublish': 'Approve & Publish',
   'review.livePublished': 'Live in Production',
   'review.publishFailed': 'Failed to publish',
+  'review.videoLabel': 'Presenter video URL',
+  'review.videoHint': 'https link to an MP4 (e.g. on R2) or a YouTube video. Leave empty to remove.',
+  'review.videoSave': 'Save video',
+  'review.videoSaving': 'Saving…',
+  'review.videoSaved': 'Saved',
+  'review.videoFailed': 'Failed to save video',
   'quality.notAssessed': 'Extraction quality not assessed',
   'quality.label': 'Extraction quality',
   'quality.prefix': 'Extraction quality:',
@@ -427,6 +433,8 @@ export const en: TranslationDict = {
   'report.keyRisks': 'Key Risks',
   'report.noRisks': 'No risks identified.',
   'report.source': 'Source:',
+  'report.video': 'Video summary',
+  'report.videoCaption': 'AI-presented summary of this report. Analysis only, not investment advice.',
 
   // ── Report chart ──
   'chart.notAvailable': 'Not available',
