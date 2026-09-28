@@ -16,11 +16,24 @@ export function youtubeId(url: string): string | null {
   return id && YOUTUBE_ID.test(id) ? id : null
 }
 
-/** Accepts only https URLs up to 2000 chars; returns the trimmed URL or null. */
+/** Same-site path of a video stored in our bucket (e.g. a HeyGen render). */
+export function storedVideoPath(slug: string, version: string): string {
+  return `/api/documents/${slug}/video?v=${encodeURIComponent(version)}`
+}
+
+/** Storage key for a document's stored video. */
+export function videoStorageKey(documentId: string): string {
+  return `videos/${documentId}.mp4`
+}
+
+const STORED_PATH = /^\/api\/documents\/[A-Za-z0-9_-]+\/video(\?v=[A-Za-z0-9_%.-]+)?$/
+
+/** Accepts https URLs up to 2000 chars, or our own stored-video path; returns the trimmed URL or null. */
 export function normalizeVideoUrl(input: unknown): string | null {
   if (typeof input !== "string") return null
   const url = input.trim()
   if (!url || url.length > 2000) return null
+  if (STORED_PATH.test(url)) return url
   try {
     return new URL(url).protocol === "https:" ? url : null
   } catch {

@@ -1,17 +1,25 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Video } from "lucide-react"
 import { useLanguage } from "@/lib/i18n/LanguageContext"
 import { adminJsonHeaders } from "@/lib/security/csrf-client"
+import HeygenVideoPanel from "@/components/admin/HeygenVideoPanel"
 
-export default function VideoUrlForm({ documentId, initialUrl }: { documentId: string; initialUrl: string | null }) {
+export default function VideoUrlForm({ documentId, initialUrl, heygenEnabled = false, heygenPending = false }: {
+  documentId: string
+  initialUrl: string | null
+  heygenEnabled?: boolean
+  heygenPending?: boolean
+}) {
   const { t } = useLanguage()
   const router = useRouter()
   const [url, setUrl] = useState(initialUrl ?? "")
   const [state, setState] = useState<"idle" | "saving" | "saved">("idle")
   const [error, setError] = useState("")
+
+  useEffect(() => { setUrl(initialUrl ?? "") }, [initialUrl])
 
   const save = async () => {
     setState("saving")
@@ -59,6 +67,7 @@ export default function VideoUrlForm({ documentId, initialUrl }: { documentId: s
       </div>
       <p className="mt-2 text-xs text-gray-500">{t("review.videoHint")}</p>
       {error && <p className="mt-2 text-sm text-red-400">{error}</p>}
+      {heygenEnabled && <HeygenVideoPanel documentId={documentId} initiallyPending={heygenPending} />}
     </div>
   )
 }

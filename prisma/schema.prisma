@@ -219,6 +219,8 @@ model Document {
 
   // Optional presenter video (e.g. a HeyGen MP4 on R2, or a YouTube link) shown on the public report page.
   videoUrl String? @map("video_url") @db.Text
+  // HeyGen video id while an avatar video is rendering; cleared once it is stored.
+  videoJobId String? @map("video_job_id")
 
   uploadedBy        User?              @relation(fields: [uploadedById], references: [id])
   files             DocumentFile[]

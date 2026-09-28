@@ -4,6 +4,7 @@ import { FileText, Activity, AlertTriangle, TrendingUp, CheckCircle, BarChart3 }
 import { requireAdmin } from "@/lib/rbac"
 import ApproveButton from "@/components/admin/ApproveButton"
 import VideoUrlForm from "@/components/admin/VideoUrlForm"
+import { heygenConfigured } from "@/lib/video/heygen"
 import ReportChart from "@/components/charts/ReportChart"
 import { ReviewableMetrics } from "@/components/admin/ReviewableMetrics"
 import { T, ReviewBadge, PartialChip } from "@/components/admin/ReviewChrome"
@@ -109,7 +110,12 @@ export default async function AdminReviewPage({ params }: { params: { slug: stri
         </div>
 
         {/* Presenter video (shown on the public report page when set) */}
-        <VideoUrlForm documentId={document.id} initialUrl={document.videoUrl} />
+        <VideoUrlForm
+          documentId={document.id}
+          initialUrl={document.videoUrl}
+          heygenEnabled={heygenConfigured()}
+          heygenPending={!!document.videoJobId}
+        />
 
         {/* Metrics Grid */}
         {analysis.metrics.length > 0 && (
