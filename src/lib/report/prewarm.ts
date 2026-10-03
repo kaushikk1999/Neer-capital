@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db"
 import { localizeReportStrings } from "./translate"
-import { buildReportStrings, buildCardStrings, parseRisks } from "./report-fields"
+import { buildReportStrings, buildCardStrings, isRecommendationSection, parseRisks } from "./report-fields"
 import type { Locale } from "@/lib/i18n/types"
 
 // Non-English locales to pre-translate. English is canonical (never translated).
@@ -39,7 +39,7 @@ export async function prewarmReportTranslations(documentId: string): Promise<voi
     title: doc.title,
     summary: a.summary,
     metrics: a.metrics,
-    sections: a.sections,
+    sections: a.sections.filter((s) => !isRecommendationSection(s)),
     charts: a.charts,
     risks: parseRisks(a.risks),
   })

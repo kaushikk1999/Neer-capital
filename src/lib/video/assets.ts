@@ -3,7 +3,7 @@ import path from "path"
 import { prisma } from "@/lib/db"
 import type { Locale } from "@/lib/i18n/types"
 import { localizeReportStrings } from "@/lib/report/translate"
-import { buildReportStrings, parseRisks, stripRecommendation } from "@/lib/report/report-fields"
+import { buildReportStrings, isRecommendationSection, parseRisks, stripRecommendation } from "@/lib/report/report-fields"
 import { generateVideoScript } from "./script"
 import { synthesizeNarration } from "./tts"
 import type { SceneKey } from "./types"
@@ -147,7 +147,7 @@ export async function buildVideoAssets(opts: {
     title: doc.title,
     summary: cleanSummary,
     metrics: analysis.metrics,
-    sections: analysis.sections,
+    sections: analysis.sections.filter((s) => !isRecommendationSection(s)),
     charts: analysis.charts,
     risks,
   })

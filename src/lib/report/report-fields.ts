@@ -24,6 +24,28 @@ export function stripRecommendation(text: string | null): string | null {
   return kept.length > 0 ? kept : null
 }
 
+// A whole section that exists to deliver an investment call ("Valuation &
+// Recommendation: BUY, target Rs 622…") is dropped from the public report.
+// Matches a recommendation-style heading, or a buy/sell/hold call in the body.
+const RECOMMENDATION_HEADING = /\b(recommendation|rating|price target|target price|our call|buy|sell)\b/i
+const RECOMMENDATION_CALL = new RegExp(
+  [
+    "\\b(recommend(?:ed|s|ation)?|rat(?:ed|ing)|upgrade[sd]?|downgrade[sd]?)\\b[^.\\n]{0,40}\\b(buy|sell|hold|accumulate|reduce|outperform|underperform|overweight|underweight)\\b",
+    "\\binvestors?\\s+(?:can|could|may|should|might)\\s+(?:buy|sell|accumulate|exit|add)\\b",
+    "\\b(buy|sell|accumulate)\\b[^.\\n]{0,80}\\btarget\\b",
+  ].join("|"),
+  "i",
+)
+
+export function isRecommendationSection(s: {
+  heading: string | null
+  content: string | null
+  sourceExcerpt?: string | null
+}): boolean {
+  if (RECOMMENDATION_HEADING.test(s.heading ?? "")) return true
+  return RECOMMENDATION_CALL.test(`${s.content ?? ""}\n${s.sourceExcerpt ?? ""}`)
+}
+
 export function parseRisks(risks: unknown): RiskItem[] {
   if (typeof risks !== "string") return []
   try {
